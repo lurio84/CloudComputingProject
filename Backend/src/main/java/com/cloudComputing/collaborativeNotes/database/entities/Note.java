@@ -1,31 +1,22 @@
 package com.cloudComputing.collaborativeNotes.database.entities;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "note")
 public class Note {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
+
     @Column(columnDefinition = "TEXT")
     private String content;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "note")
-    private List<NoteChange> changes;
-
-    @OneToMany(mappedBy = "note")
-    private List<NoteVersion> versions;
-
-    @OneToMany(mappedBy = "note")
-    private List<ShareLink> shareLinks;
 
     // Getters and Setters
     public Long getId() {
@@ -66,29 +57,5 @@ public class Note {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public List<NoteChange> getChanges() {
-        return changes;
-    }
-
-    public void setChanges(List<NoteChange> changes) {
-        this.changes = changes;
-    }
-
-    public List<NoteVersion> getVersions() {
-        return versions;
-    }
-
-    public void setVersions(List<NoteVersion> versions) {
-        this.versions = versions;
-    }
-
-    public List<ShareLink> getShareLinks() {
-        return shareLinks;
-    }
-
-    public void setShareLinks(List<ShareLink> shareLinks) {
-        this.shareLinks = shareLinks;
     }
 }

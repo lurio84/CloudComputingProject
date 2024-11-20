@@ -1,5 +1,6 @@
 package com.cloudComputing.collaborativeNotes.database.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,6 +14,7 @@ public class NoteChange {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "note_id", nullable = false)
+    @JsonBackReference
     private Note note;
 
     @ManyToOne(fetch = FetchType.LAZY)

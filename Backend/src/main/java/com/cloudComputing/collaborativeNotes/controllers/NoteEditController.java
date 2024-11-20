@@ -8,9 +8,13 @@ import com.cloudComputing.collaborativeNotes.database.repositories.NoteRepositor
 import com.cloudComputing.collaborativeNotes.database.repositories.UserRepository;
 import com.cloudComputing.collaborativeNotes.models.NoteEditMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 
@@ -29,15 +33,15 @@ public class NoteEditController {
     @MessageMapping("/edit")
     @SendTo("/topic/notes/{noteId}")
     public NoteEditMessage handleEdit(NoteEditMessage message) {
-        // Buscar la nota correspondiente a partir del noteId
+        // Fetch the corresponding note based on noteId
         Note note = noteRepository.findById(message.getNoteId())
                 .orElseThrow(() -> new RuntimeException("Note not found"));
 
-        // Buscar el usuario correspondiente a partir del userId
+        // Fetch the corresponding user based on userId
         User user = userRepository.findById(message.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Crear una nueva instancia de NoteChange
+        // Create a new instance of NoteChange to track the edit
         NoteChange noteChange = new NoteChange();
         noteChange.setNote(note);
         noteChange.setUser(user);
@@ -45,15 +49,23 @@ public class NoteEditController {
         noteChange.setTimestamp(LocalDateTime.now());
         noteChange.setChangeType(NoteChange.ChangeType.EDITED);
 
-        // Guardar el cambio en la base de datos
+        // Save the note change in the database for tracking purposes
         noteChangeRepository.save(noteChange);
 
-        // Actualizar el contenido de la nota
+        // Update the note content in the main Note entity
         note.setContent(message.getContent());
-        noteRepository.save(note);
+        noteRepository.save(note); // Make sure the note content is saved
 
-        // Retransmitir el mensaje a todos los clientes suscritos al documento
+        // Broadcast the message to all clients subscribed to the document
         return message;
     }
-}
 
+    // Endpoint to get the current content of a specific note
+    @GetMapping("/notes/{noteId}")
+    public ResponseEntity<Note> getNoteContent(@PathVariable Long noteId) {
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+        return ResponseEntity.ok(note);
+    }
+
+}

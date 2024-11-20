@@ -78,11 +78,11 @@ cp .env.example .env
 
 Update the `.env` file with your specific database connection details.
 
-## Database Model Diagram
+## Database Relational Model
 
-Below is the relational model diagram for the database used in CollaborativeNotes:
+The following diagram shows the relational model of the database used in CollaborativeNotes:
 
-![Database Model](relationalModel.png)
+![Database Relational Model](assets/relationalModel.png)
 
 ## Contributing
 

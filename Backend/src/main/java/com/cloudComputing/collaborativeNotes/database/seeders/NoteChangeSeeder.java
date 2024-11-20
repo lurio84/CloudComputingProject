@@ -8,9 +8,6 @@ import com.cloudComputing.collaborativeNotes.database.repositories.NoteRepositor
 import com.cloudComputing.collaborativeNotes.database.repositories.UserRepository;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-
-// Seeder class for NoteChange entity
 @Component
 public class NoteChangeSeeder {
 
@@ -33,10 +30,15 @@ public class NoteChangeSeeder {
             NoteChange noteChange = new NoteChange();
             noteChange.setNote(note);
             noteChange.setUser(user);
-            noteChange.setTimestamp(LocalDateTime.now());
             noteChange.setContent("Initial content change");
-            noteChange.setChangeType("edit");
-            noteChangeRepository.save(noteChange); // Save the note change to the database
+            noteChange.setChangeType(NoteChange.ChangeType.ADDED);
+
+            // Save the note change to the database
+            noteChangeRepository.save(noteChange);
+
+            // Update the note content to reflect the latest change
+            note.setContent(noteChange.getContent());
+            noteRepository.save(note);
         }
     }
 }

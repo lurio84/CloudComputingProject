@@ -1,28 +1,38 @@
 package com.cloudComputing.collaborativeNotes.database.entities;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "note_change")
 public class NoteChange {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "note_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "note_id", nullable = false)
     private Note note;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(nullable = false)
     private LocalDateTime timestamp;
-    @Column(columnDefinition = "TEXT")
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
-    private String changeType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChangeType changeType;
+
+    @PrePersist
+    protected void onCreate() {
+        this.timestamp = LocalDateTime.now();
+    }
 
     // Getters and Setters
     public Long getId() {
@@ -65,11 +75,18 @@ public class NoteChange {
         this.content = content;
     }
 
-    public String getChangeType() {
+    public ChangeType getChangeType() {
         return changeType;
     }
 
-    public void setChangeType(String changeType) {
+    public void setChangeType(ChangeType changeType) {
         this.changeType = changeType;
+    }
+
+    // Enum for change types
+    public enum ChangeType {
+        ADDED,
+        EDITED,
+        DELETED
     }
 }

@@ -57,7 +57,7 @@ The backend code is structured as follows:
 
 ### Configuration
 
-The application uses the following configuration properties in `application.properties`.
+The application uses the following configuration properties in `application.properties`. Additionally, you need to set up a `.env` file at the root of the project with the basic parameters required for database connection (`DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`).
 
 - **JPA Configuration**:
   ```properties
@@ -66,6 +66,25 @@ The application uses the following configuration properties in `application.prop
   ```
   These settings ensure that the database schema is created at startup.
 
+### Environment Variables
+
+A `.env.example` file is included in the repository. You should copy this file to `.env` and set your local configuration:
+
+```sh
+cp .env.example .env
+```
+
+Update the `.env` file with your specific database connection details.
+
+## Adding `.env.example` to Git Ignore
+
+To ensure sensitive information is not committed, add `.env.example` and `.env` to your `.gitignore` file:
+
+```gitignore
+.env.example
+.env
+```
+
 ## Contributing
 
 Contributions are welcome! If you'd like to contribute to the project, please fork the repository and create a pull request. Make sure to follow best practices and add meaningful comments to your code.
@@ -73,6 +92,4 @@ Contributions are welcome! If you'd like to contribute to the project, please fo
 ## License
 
 This project is licensed under the MIT License.
-
-
 

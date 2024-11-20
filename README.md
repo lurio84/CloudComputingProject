@@ -1,68 +1,74 @@
-# Collaborative Notes Project
+# CollaborativeNotes
 
-## General Description
+CollaborativeNotes is a cloud-based application similar to Notion or Google Docs, aimed at allowing multiple users to simultaneously edit a shared text file. This application is designed to be simple and focuses solely on text editing without implementing support for images or other complex formatting. The application uses a Spring Boot backend with MariaDB as the database, and the front end is being developed separately using Angular.
 
-Collaborative Notes is a Spring Boot-based application that allows users to create, edit, and share notes collaboratively in real-time. The application uses WebSockets to ensure smooth communication between users while they work simultaneously on their notes.
+## Features
+- **Simultaneous Editing**: Multiple users can edit a single note at the same time using WebSockets for real-time updates.
+- **Text Only**: Focuses on text-based editing with no image or advanced formatting support.
+- **Access Levels**: Notes can be shared with different access levels for users (editor/viewer).
+- **Share via Links**: Notes can be shared using unique links that provide specific permissions.
+- **Version Control**: A version control mechanism is implemented for tracking changes and maintaining a history of edits.
+
+## Tech Stack
+- **Backend**: Spring Boot
+- **Database**: MariaDB
+- **Frontend**: Angular (handled by another developer)
+- **Real-time Collaboration**: WebSockets
 
 ## Project Structure
+The backend code is structured as follows:
+- `configs`: Contains configuration classes, such as WebSocket configuration and DatabaseSeederConfig.
+- `controllers`: REST controllers to expose endpoints for interacting with the application.
+- `database`:
+    - `entities`: Contains JPA entity classes representing the database structure.
+    - `repositories`: Interfaces extending `JpaRepository` for data access.
+    - `seeders`: Classes for seeding the database with initial data.
+- `handlers`: Handles real-time data processing and WebSocket interactions.
 
-The application is organized into several modules to ensure a clean and scalable architecture:
+## Setting Up the Project
 
-- **Backend**: Contains the business logic, controllers, and necessary configurations for the application.
-    - **src/main/java/com/cloudComputing/collaborativeNotes**:
-        - **config**: Configuration related to WebSockets and other settings.
-        - **controllers**: REST controllers that handle client requests.
-        - **services**: Business logic and data processing.
-        - **repositories**: Interfaces to access the database using JPA.
-        - **entities**: Classes that represent database tables.
-        - **dtos**: Data Transfer Objects used for communication between layers.
-        - **handlers**: Handlers for functionalities like WebSockets.
-    - **src/main/resources**:
-        - **application.properties**: Configuration for the database and other application parameters.
+### Prerequisites
+- **Java 17** or higher
+- **Maven**
+- **MariaDB**: Ensure MariaDB is running locally or update the `application.properties` file for a remote connection.
 
-## Technologies Used
+### Steps to Run
+1. **Clone the Repository**:
+   ```sh
+   git clone <repository-url>
+   ```
+2. **Navigate to Project Directory**:
+   ```sh
+   cd collaborativeNotes
+   ```
+3. **Set Up Database**:
+    - Create a MariaDB database named `collaborative_notes`.
+    - Update the connection details in `src/main/resources/application.properties`.
+4. **Run the Application**:
+   ```sh
+   mvn spring-boot:run
+   ```
 
-- **Java 17**: Main language of the project.
-- **Spring Boot 3.3.5**: Framework for building the backend, simplifying configuration and deployment.
-- **MariaDB**: Relational database to store notes and user data.
-- **WebSockets**: To provide real-time collaborative editing capabilities.
+### Configuration
+The application uses the following configuration properties in `application.properties`:
+- **JPA Configuration**:
+  ```properties
+  spring.jpa.hibernate.ddl-auto=create-drop
+  spring.datasource.initialization-mode=always
+  ```
+  These settings ensure that the database schema is created at startup.
 
-## Project Configuration
-
-1. **Database**:
-    - The application is configured to use MariaDB. Make sure you have a MariaDB instance running and that the details in `application.properties` are correct.
-    - Important variables in `application.properties`:
-        - `spring.datasource.url`: Database URL (e.g., `jdbc:mariadb://localhost:3306/test`).
-        - `spring.datasource.username` and `spring.datasource.password`: Credentials for database access. **(You should replace these with appropriate values or use environment variables)**.
-
-2. **Running the Project**:
-    - To run the application, you can use the following command:
-      ```bash
-      ./mvnw spring-boot:run
-      ```
-    - Alternatively, you can run the main class `CollaborativeNotesApplication` from IntelliJ.
-
-## Current Endpoints
-
-- **GET /**: Checks if the server is working correctly. Returns the message: `Server working properly`.
-
-This is a basic endpoint to validate that the application is up and running.
-
-## Next Steps
-
-- **Develop Additional REST Endpoints**: Implement logic to create, update, and delete notes.
-- **Implement Security**: Add user authentication and authorization.
-- **API Documentation**: Consider using Swagger to document the API and facilitate the use of endpoints.
+### Running Tests
+To run the tests, use the following command:
+```sh
+mvn test
+```
 
 ## Contributing
+Contributions are welcome! If you'd like to contribute to the project, please fork the repository and create a pull request. Make sure to follow best practices and add meaningful comments to your code.
 
-If you wish to contribute to this project, please follow these steps:
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/new-feature`).
-3. Make your changes and commit them (`git commit -m 'Add new feature'`).
-4. Submit a pull request for review.
+## License
+This project is licensed under the MIT License.
 
-## Contact
 
-For questions or suggestions, you can contact the lead developer via the following email: [lucas.ronquillo@gmail.com](mailto:your-email@example.com).
 

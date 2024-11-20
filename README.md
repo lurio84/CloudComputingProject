@@ -35,7 +35,7 @@ The backend code is structured as follows:
 ### Steps to Run
 1. **Clone the Repository**:
    ```sh
-   git clone <repository-url>
+   git clone https://github.com/lurio84/CloudComputingProject
    ```
 2. **Navigate to Project Directory**:
    ```sh

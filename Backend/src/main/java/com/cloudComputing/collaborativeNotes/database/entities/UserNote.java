@@ -1,7 +1,7 @@
 package com.cloudComputing.collaborativeNotes.database.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,10 +13,12 @@ public class UserNote {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "note_id")
+    @JsonBackReference
     private Note note;
 
     private String accessLevel;

@@ -78,6 +78,12 @@ cp .env.example .env
 
 Update the `.env` file with your specific database connection details.
 
+## Database Model Diagram
+
+Below is the relational model diagram for the database used in CollaborativeNotes:
+
+![Database Model](relationalModel.png)
+
 ## Contributing
 
 Contributions are welcome! If you'd like to contribute to the project, please fork the repository and create a pull request. Make sure to follow best practices and add meaningful comments to your code.
@@ -85,4 +91,3 @@ Contributions are welcome! If you'd like to contribute to the project, please fo
 ## License
 
 This project is licensed under the MIT License.
-

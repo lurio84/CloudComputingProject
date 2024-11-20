@@ -21,13 +21,15 @@ CollaborativeNotes is a cloud-based application similar to Notion or Google Docs
 
 The backend code is structured as follows:
 
-- `configs`: Contains configuration classes, such as WebSocket configuration and DatabaseSeederConfig.
-- `controllers`: REST controllers to expose endpoints for interacting with the application.
+- `configs`: Contains configuration classes, such as `WebSocketConfig` and `DatabaseSeederConfig`.
+- `controllers`: REST controllers that expose endpoints for interacting with the application.
 - `database`:
-    - `entities`: Contains JPA entity classes representing the database structure.
-    - `repositories`: Interfaces extending `JpaRepository` for data access.
-    - `seeders`: Classes for seeding the database with initial data.
-- `handlers`: Handles real-time data processing and WebSocket interactions.
+    - `entities`: JPA entity classes representing the database structure (`Note`, `User`, etc.).
+    - `repositories`: Interfaces extending `JpaRepository` for data access operations.
+    - `seeders`: Classes to seed the database with initial data (`NoteSeeder`, `UserSeeder`, etc.).
+- `handlers`: Handles real-time WebSocket interactions (e.g., `SimpleTextWebSocketHandler`).
+- `models`: Classes representing data models used for WebSocket communication (`NoteEditMessage`).
+- `CollaborativeNotesApplication`: The main entry point of the Spring Boot application.
 
 ## Setting Up the Project
 
@@ -45,7 +47,7 @@ The backend code is structured as follows:
    ```
 2. **Navigate to Project Directory**:
    ```sh
-   cd cloudComputingProject
+   cd CloudComputingProject
    ```
 3. **Set Up Database**:
     - Create a MariaDB database named `collaborative_notes`.
@@ -75,15 +77,6 @@ cp .env.example .env
 ```
 
 Update the `.env` file with your specific database connection details.
-
-## Adding `.env.example` to Git Ignore
-
-To ensure sensitive information is not committed, add `.env.example` and `.env` to your `.gitignore` file:
-
-```gitignore
-.env.example
-.env
-```
 
 ## Contributing
 

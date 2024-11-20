@@ -13,7 +13,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(new SimpleTextWebSocketHandler(), "/ws")
-                .setAllowedOrigins("*"); // Permitimos todas las conexiones para pruebas
+                .setAllowedOrigins("*"); // We allow all connections for testing purposes
     }
 }
 

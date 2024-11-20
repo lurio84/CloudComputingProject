@@ -39,7 +39,7 @@ The backend code is structured as follows:
    ```
 2. **Navigate to Project Directory**:
    ```sh
-   cd collaborativeNotes
+   cd cloudComputingProject
    ```
 3. **Set Up Database**:
     - Create a MariaDB database named `collaborative_notes`.

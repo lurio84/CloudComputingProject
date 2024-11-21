@@ -10,9 +10,8 @@ import com.cloudComputing.collaborativeNotes.models.NoteEditMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -30,9 +29,11 @@ public class NoteEditController {
     @Autowired
     private NoteChangeRepository noteChangeRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @MessageMapping("/edit")
-    @SendTo("/topic/notes/{noteId}")
-    public NoteEditMessage handleEdit(NoteEditMessage message) {
+    public void handleEdit(NoteEditMessage message) {
         // Fetch the corresponding note based on noteId
         Note note = noteRepository.findById(message.getNoteId())
                 .orElseThrow(() -> new RuntimeException("Note not found"));
@@ -54,10 +55,10 @@ public class NoteEditController {
 
         // Update the note content in the main Note entity
         note.setContent(message.getContent());
-        noteRepository.save(note); // Make sure the note content is saved
+        noteRepository.save(note);
 
-        // Broadcast the message to all clients subscribed to the document
-        return message;
+        // Broadcast the message to all clients subscribed to the topic for the specific note
+        messagingTemplate.convertAndSend("/topic/notes/" + message.getNoteId(), message);
     }
 
     // Endpoint to get the current content of a specific note

@@ -27,7 +27,6 @@ The backend code is structured as follows:
     - `entities`: JPA entity classes representing the database structure (`Note`, `User`, etc.).
     - `repositories`: Interfaces extending `JpaRepository` for data access operations.
     - `seeders`: Classes to seed the database with initial data (`NoteSeeder`, `UserSeeder`, etc.).
-- `handlers`: Handles real-time WebSocket interactions (e.g., `SimpleTextWebSocketHandler`).
 - `models`: Classes representing data models used for WebSocket communication (`NoteEditMessage`).
 - `CollaborativeNotesApplication`: The main entry point of the Spring Boot application.
 
@@ -91,3 +90,4 @@ Contributions are welcome! If you'd like to contribute to the project, please fo
 ## License
 
 This project is licensed under the MIT License.
+

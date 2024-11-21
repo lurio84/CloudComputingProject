@@ -1,7 +1,6 @@
 package com.cloudComputing.collaborativeNotes.database.entities;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity

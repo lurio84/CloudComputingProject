@@ -14,7 +14,7 @@ CollaborativeNotes is a cloud-based application similar to Notion or Google Docs
 
 - **Backend**: Spring Boot
 - **Database**: MariaDB
-- **Frontend**: Angular (handled by another developer)
+- **Frontend**: Angular
 - **Real-time Collaboration**: WebSockets
 
 ## Project Structure

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Real-time Editing Simulation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+<h2>Collaborative Note Editing Simulation</h2>
+
+<label for="userId">User ID:</label>
+<input type="number" id="userId" value="1" min="1"><br><br>
+
+<textarea id="noteContent" rows="10" cols="50" placeholder="Edit the note here..."></textarea>
+
+<div id="messages">
+    <h3>Real-time Updates:</h3>
+</div>
+
+<script>
+    let stompClient = null;
+    let debounceTimer = null;
+
+    function fetchInitialNoteContent(noteId) {
+        fetch(`http://localhost:8080/notes/${noteId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch note content');
+                }
+                return response.json();
+            })
+            .then(note => {
+                document.getElementById("noteContent").value = note.content;
+                connect();
+            })
+            .catch(error => {
+                console.error('Error fetching initial note content:', error);
+            });
+    }
+
+    function connect() {
+        const socket = new WebSocket('ws://localhost:8080/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = () => {};
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            stompClient.subscribe('/topic/notes/1', function (message) {
+                const noteEditMessage = JSON.parse(message.body);
+                console.log('Message received: ', noteEditMessage);
+                showMessage(noteEditMessage);
+            });
+        }, function (error) {
+            console.error('Connection error: ', error);
+        });
+    }
+
+    function sendEdit() {
+        if (stompClient && stompClient.connected) {
+            const content = document.getElementById("noteContent").value;
+            const userId = document.getElementById("userId").value;
+
+            const message = {
+                noteId: 1,
+                userId: parseInt(userId),
+                content: content
+            };
+
+            stompClient.send("/app/edit", {}, JSON.stringify(message));
+            console.log('Message sent: ', message);
+        } else {
+            console.error('Cannot send message. WebSocket is not connected.');
+        }
+    }
+
+    function debounceSendEdit() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => sendEdit(), 300); // Adjust the debounce delay as needed
+    }
+
+    function showMessage(message) {
+        const textArea = document.getElementById("noteContent");
+        if (textArea.value !== message.content) {
+            textArea.value = message.content;
+        }
+
+        const messagesDiv = document.getElementById("messages");
+        const newMessage = document.createElement("p");
+        newMessage.appendChild(document.createTextNode("User: " + message.userId + " - Content: " + message.content));
+        messagesDiv.appendChild(newMessage);
+    }
+
+    document.getElementById("noteContent").addEventListener("input", debounceSendEdit);
+
+    window.onload = () => fetchInitialNoteContent(1);
+</script>
+</body>
+</html>

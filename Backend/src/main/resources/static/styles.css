@@ -1,0 +1,85 @@
+/* General body styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+/* Header */
+h2 {
+    text-align: center;
+    color: #4CAF50;
+    margin-top: 20px;
+}
+
+/* Form inputs and labels */
+label {
+    display: block;
+    font-weight: bold;
+    margin-top: 20px;
+    text-align: center;
+}
+
+input, textarea {
+    display: block;
+    margin: 0 auto;
+    width: 80%;
+    max-width: 600px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+textarea {
+    margin-top: 10px;
+    resize: none;
+}
+
+/* Messages */
+#messages {
+    width: 80%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+#messages h3 {
+    margin: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Message paragraph styling */
+#messages p {
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #e7f7e7;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+/* Button styling (if needed in the future) */
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: #fff;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}

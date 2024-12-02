@@ -41,12 +41,12 @@ public class NoteController {
     public void handleEdit(DiffRequest diffRequest) {
         System.out.println("Received DiffRequest: " + diffRequest);
 
-        // Validar el DiffRequest
+        // Validate the DiffRequest
         if (diffRequest == null || diffRequest.getDiff() == null || diffRequest.getDiff().isEmpty()) {
             throw new IllegalArgumentException("Invalid DiffRequest");
         }
 
-        // Obtener la nota y el usuario
+        // Retrieve the note and the user
         Optional<Note> optionalNote = noteRepository.findById(diffRequest.getNoteId());
         Optional<User> optionalUser = userRepository.findById(diffRequest.getUserId());
         if (optionalNote.isEmpty() || optionalUser.isEmpty()) {
@@ -58,14 +58,14 @@ public class NoteController {
         String originalContent = note.getContent();
 
         try {
-            // Aplicar el diff recibido al contenido original
+            // Apply the received diff to the original content
             LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(diffRequest.getDiff());
             Object[] result = dmp.patchApply(patches, originalContent);
 
             String updatedContent = (String) result[0];
             note.setContent(updatedContent);
 
-            // Guardar el cambio en la base de datos
+            // Save the updated note to the database
             noteRepository.save(note);
 
             NoteChange noteChange = new NoteChange();
@@ -76,13 +76,13 @@ public class NoteController {
             noteChange.setTimestamp(LocalDateTime.now());
             noteChangeRepository.save(noteChange);
 
-            // Preparar el mensaje para otros clientes
+            // Prepare the message to send to other clients
             DiffRequest messageForOthers = new DiffRequest();
             messageForOthers.setNoteId(diffRequest.getNoteId());
-            messageForOthers.setUserId(diffRequest.getUserId()); // Incluye el usuario que hizo el cambio
+            messageForOthers.setUserId(diffRequest.getUserId()); // Include the user who made the change
             messageForOthers.setDiff(diffRequest.getDiff());
 
-            // Enviar el diff a otros clientes
+            // Send the diff to other clients
             messagingTemplate.convertAndSend("/topic/notes/" + note.getId(), messageForOthers);
 
         } catch (Exception e) {
@@ -91,7 +91,7 @@ public class NoteController {
         }
     }
 
-    // Endpoint to get the current content of a specific note
+    // Endpoint to retrieve the current content of a specific note
     @GetMapping("/notes/{noteId}")
     public ResponseEntity<Note> getNoteContent(@PathVariable Long noteId) {
         Note note = noteRepository.findById(noteId)

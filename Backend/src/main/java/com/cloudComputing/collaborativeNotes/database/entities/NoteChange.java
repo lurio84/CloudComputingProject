@@ -25,7 +25,7 @@ public class NoteChange {
     private LocalDateTime timestamp;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
+    private String diff;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -69,12 +69,12 @@ public class NoteChange {
         this.timestamp = timestamp;
     }
 
-    public String getContent() {
-        return content;
+    public String getDiff() {
+        return diff;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setDiff(String diff) {
+        this.diff = diff;
     }
 
     public ChangeType getChangeType() {

@@ -22,6 +22,11 @@ public class UserSeeder {
             user.setEmail("john@example.com");
             user.setPassword("password123");
             userRepository.save(user); // Save the user to the database
+            User user2 = new User();
+            user2.setUsername("JuanitoLaChupa");
+            user2.setEmail("juanlachupa@gmail.com");
+            user2.setPassword("password123");
+            userRepository.save(user2);
         }
     }
 }

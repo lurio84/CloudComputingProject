@@ -3,7 +3,7 @@ let originalContent = "";
 let localUserId = null;
 
 function connect() {
-    const socket = new WebSocket("ws://25.12.181.24:8080/ws");
+    const socket = new WebSocket("ws://localhost:8080/ws");
     stompClient = Stomp.over(socket);
     stompClient.debug = () => {}; // Disable debug logs
 
@@ -27,7 +27,7 @@ function connect() {
 }
 
 function fetchInitialNoteContent(noteId) {
-    fetch(`http://25.12.181.24:8080/notes/${noteId}`)
+    fetch(`http://localhost:8080/notes/${noteId}`)
         .then(response => response.json())
         .then(note => {
             document.getElementById("noteContent").value = note.content;

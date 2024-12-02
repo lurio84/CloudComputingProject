@@ -30,14 +30,14 @@ public class NoteChangeSeeder {
             NoteChange noteChange = new NoteChange();
             noteChange.setNote(note);
             noteChange.setUser(user);
-            noteChange.setContent("Initial content change");
+            noteChange.setDiff("Initial content change");
             noteChange.setChangeType(NoteChange.ChangeType.ADDED);
 
             // Save the note change to the database
             noteChangeRepository.save(noteChange);
 
             // Update the note content to reflect the latest change
-            note.setContent(noteChange.getContent());
+            note.setContent(noteChange.getDiff());
             noteRepository.save(note);
         }
     }

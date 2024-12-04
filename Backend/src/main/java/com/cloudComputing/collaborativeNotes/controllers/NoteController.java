@@ -59,26 +59,11 @@ public class NoteController {
 
         try {
             // Apply the received diff to the original content
-            LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(diffRequest.getDiff());
-            Object[] result = dmp.patchApply(patches, originalContent);
-
-            String updatedContent = (String) result[0];
+            String updatedContent = applyDiffToContent(diffRequest.getDiff(), originalContent);
             note.setContent(updatedContent);
 
             // Determine the type of change based on the content of the diff
-            NoteChange.ChangeType changeType = NoteChange.ChangeType.EDITED; // Default is "EDITED"
-
-            for (DiffMatchPatch.Patch patch : patches) {
-                for (DiffMatchPatch.Diff diff : patch.diffs) {
-                    if (diff.operation == DiffMatchPatch.Operation.INSERT) {
-                        changeType = NoteChange.ChangeType.ADDED;
-                        break;
-                    } else if (diff.operation == DiffMatchPatch.Operation.DELETE) {
-                        changeType = NoteChange.ChangeType.DELETED;
-                        break;
-                    }
-                }
-            }
+            NoteChange.ChangeType changeType = determineChangeType(diffRequest.getDiff());
 
             // Save the updated note to the database
             noteRepository.save(note);
@@ -107,6 +92,27 @@ public class NoteController {
         }
     }
 
+    // Method to apply the received diff to the original content
+    private String applyDiffToContent(String diff, String originalContent) {
+        LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(diff);
+        Object[] result = dmp.patchApply(patches, originalContent);
+        return (String) result[0];
+    }
+
+    // Method to determine the type of change based on the content of the diff
+    private NoteChange.ChangeType determineChangeType(String diff) {
+        LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(diff);
+        for (DiffMatchPatch.Patch patch : patches) {
+            for (DiffMatchPatch.Diff diffItem : patch.diffs) {
+                if (diffItem.operation == DiffMatchPatch.Operation.INSERT) {
+                    return NoteChange.ChangeType.ADDED;
+                } else if (diffItem.operation == DiffMatchPatch.Operation.DELETE) {
+                    return NoteChange.ChangeType.DELETED;
+                }
+            }
+        }
+        return NoteChange.ChangeType.EDITED;
+    }
 
     // Endpoint to retrieve the current content of a specific note
     @GetMapping("/notes/{noteId}")

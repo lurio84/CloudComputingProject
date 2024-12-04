@@ -167,6 +167,7 @@ The main difference between `Note_Change` and `Note_Version` is:
 
 - **Purpose**:
   - The `Note_Change` table is essential for **real-time collaboration**.
+  - The `Note_Version` table is essential for **recovery** and **version control**.
 
 ## Contributing
 

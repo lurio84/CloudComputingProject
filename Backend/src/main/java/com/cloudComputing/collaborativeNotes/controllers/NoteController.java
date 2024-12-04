@@ -7,20 +7,19 @@ import com.cloudComputing.collaborativeNotes.database.repositories.NoteChangeRep
 import com.cloudComputing.collaborativeNotes.database.repositories.NoteRepository;
 import com.cloudComputing.collaborativeNotes.database.repositories.UserRepository;
 import com.cloudComputing.collaborativeNotes.models.DiffRequest;
+import com.cloudComputing.collaborativeNotes.services.NoteVersionService;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.Optional;
 
-@Controller
+@RestController
 public class NoteController {
 
     @Autowired
@@ -120,5 +119,13 @@ public class NoteController {
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new RuntimeException("Note not found"));
         return ResponseEntity.ok(note);
+    }
+
+    @Autowired
+    private NoteVersionService noteVersionService;
+
+    @PostMapping("/{noteId}/version")
+    public void createNoteVersion(@PathVariable Long noteId, @RequestParam Long userId) {
+        noteVersionService.saveNoteVersion(noteId, userId);
     }
 }

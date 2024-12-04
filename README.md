@@ -83,6 +83,92 @@ The following diagram shows the relational model of the database used in Collabo
 
 ![Database Relational Model](assets/relationalModel.png)
 
+---
+
+## Database Explanation
+
+### **User Entity**
+The `User` entity stores user information such as usernames, emails, and authentication data.
+
+**Attributes of the User Entity:**
+1. **id**: Primary key (unique identifier for each user).
+2. **username**: The user's name or nickname.
+3. **email**: Contact email of the user.
+4. **password**: Encrypted password for authentication.
+
+---
+
+### **Note Entity**
+The `Note` entity represents the notes or documents being worked on, including their content, titles, and timestamps.
+
+**Attributes of the Note Entity:**
+1. **id**: Primary key (unique identifier for each note).
+2. **title**: Title of the note.
+3. **content**: Content of the note.
+4. **created_at**: Timestamp of when the note was created.
+5. **updated_at**: Timestamp of the last modification.
+
+---
+
+### **User_Note Table**
+The `User_Note` table defines access levels for users collaborating on a note.
+
+**Attributes of the User_Note Table:**
+1. **user_id**: Foreign key linking to the `User` table.
+2. **note_id**: Foreign key linking to the `Note` table.
+3. **access_level**: Specifies the user's access permissions (e.g., read, write, admin).
+4. **added_at**: Timestamp of when the user was added to collaborate on the note.
+
+---
+
+### **Note_Change Table**
+The `Note_Change` table records all modifications for audit and rollback purposes.
+
+**Attributes of the Note_Change Table:**
+1. **id**: Primary key (unique identifier for the change).
+2. **note_id**: Foreign key linking to the `Note` being changed.
+3. **user_id**: Foreign key linking to the `User` who made the change.
+4. **timestamp**: When the change was made.
+5. **diff**: Details of the change (e.g., what was added/removed).
+6. **change_type**: Type of change (e.g., "edit", "delete").
+
+---
+
+### **Note_Version Table**
+The `Note_Version` table allows us to store and manage multiple versions of notes.
+
+**Attributes of the Note_Version Table:**
+1. **id**: Primary key (unique identifier for the version).
+2. **note_id**: Foreign key linking to the `Note`.
+3. **user_id**: Foreign key linking to the `User` who created the version.
+4. **version_number**: Number representing the version order.
+5. **content**: Content of the version.
+6. **created_at**: Timestamp when the version was created.
+
+---
+
+### **ShareLink Table**
+The `ShareLink` table facilitates the sharing of notes via links with specific permissions and expiration dates.
+
+**Attributes of the ShareLink Table:**
+1. **id**: Primary key (unique identifier for the shared link).
+2. **note_id**: Foreign key linking to the `Note`.
+3. **link**: The unique URL for sharing.
+4. **access_level**: Permissions for the shared link (e.g., read-only).
+5. **expiration_date**: Expiry date of the shared link.
+
+---
+
+### **Differences Between Note_Change and Note_Version Tables**
+The main difference between `Note_Change` and `Note_Version` is:
+
+- **`Note_Change`**: Stores **individual changes**, which are small, incremental edits, ideal for real-time collaboration and change tracking.
+- **`Note_Version`**: Stores **entire document versions**, representing the complete state of the document at a specific point in time, which is crucial for version control and recovery.
+
+- **Purpose**:
+  - The `Note_Change` table is essential for **real-time collaboration**.
+  - The `Note_Version` table is essential for **recovery** and **version control**.
+
 ## Contributing
 
 Contributions are welcome! If you'd like to contribute to the project, please fork the repository and create a pull request. Make sure to follow best practices and add meaningful comments to your code.

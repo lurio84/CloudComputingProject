@@ -22,7 +22,7 @@ public class Note {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference(value = "note-userNote")
     private Set<UserNote> userNotes = new HashSet<>();
 
     // Getters and Setters

@@ -1,6 +1,6 @@
 package com.cloudComputing.collaborativeNotes.database.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,7 +17,7 @@ public class User {
     private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
+    @JsonManagedReference(value = "user-userNote")
     private Set<UserNote> userNotes = new HashSet<>();
 
     // Getters and Setters

@@ -65,13 +65,29 @@ public class NoteController {
             String updatedContent = (String) result[0];
             note.setContent(updatedContent);
 
+            // Determine the type of change based on the content of the diff
+            NoteChange.ChangeType changeType = NoteChange.ChangeType.EDITED; // Default is "EDITED"
+
+            for (DiffMatchPatch.Patch patch : patches) {
+                for (DiffMatchPatch.Diff diff : patch.diffs) {
+                    if (diff.operation == DiffMatchPatch.Operation.INSERT) {
+                        changeType = NoteChange.ChangeType.ADDED;
+                        break;
+                    } else if (diff.operation == DiffMatchPatch.Operation.DELETE) {
+                        changeType = NoteChange.ChangeType.DELETED;
+                        break;
+                    }
+                }
+            }
+
             // Save the updated note to the database
             noteRepository.save(note);
 
+            // Create a new NoteChange to save the changes
             NoteChange noteChange = new NoteChange();
             noteChange.setNote(note);
             noteChange.setUser(user);
-            noteChange.setChangeType(NoteChange.ChangeType.EDITED);
+            noteChange.setChangeType(changeType);
             noteChange.setDiff(diffRequest.getDiff());
             noteChange.setTimestamp(LocalDateTime.now());
             noteChangeRepository.save(noteChange);
@@ -90,6 +106,7 @@ public class NoteController {
             throw new RuntimeException("Failed to apply diff");
         }
     }
+
 
     // Endpoint to retrieve the current content of a specific note
     @GetMapping("/notes/{noteId}")

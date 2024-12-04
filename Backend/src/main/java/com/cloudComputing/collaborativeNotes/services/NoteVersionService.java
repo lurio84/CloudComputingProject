@@ -25,18 +25,21 @@ public class NoteVersionService {
     private UserRepository userRepository;
 
     public void saveNoteVersion(Long noteId, Long userId) {
+        // Find the note by its ID
         Optional<Note> optionalNote = noteRepository.findById(noteId);
+        // Find the user by their ID
         Optional<User> optionalUser = userRepository.findById(userId);
 
+        // If both note and user exist, proceed to save the note version
         if (optionalNote.isPresent() && optionalUser.isPresent()) {
             Note note = optionalNote.get();
             User user = optionalUser.get();
             String currentContent = note.getContent();
 
-            // Obtener el número de versión más reciente
+            // Get the most recent version number
             int latestVersionNumber = noteVersionRepository.findLatestVersionNumberByNoteId(noteId).orElse(0);
 
-            // Crear una nueva versión de la nota
+            // Create a new version of the note
             NoteVersion newVersion = new NoteVersion();
             newVersion.setNote(note);
             newVersion.setUser(user);
@@ -44,11 +47,11 @@ public class NoteVersionService {
             newVersion.setContent(currentContent);
             newVersion.setCreatedAt(LocalDateTime.now());
 
-            // Guardar la nueva versión
+            // Save the new version
             noteVersionRepository.save(newVersion);
         } else {
+            // Throw an exception if the note or user is not found
             throw new IllegalArgumentException("Note with ID " + noteId + " or User with ID " + userId + " not found");
         }
     }
-
 }

@@ -83,6 +83,10 @@ The following diagram shows the relational model of the database used in Collabo
 
 ![Database Relational Model](assets/relationalModel.png)
 
+# Database Explanation
+
+
+
 ## Contributing
 
 Contributions are welcome! If you'd like to contribute to the project, please fork the repository and create a pull request. Make sure to follow best practices and add meaningful comments to your code.

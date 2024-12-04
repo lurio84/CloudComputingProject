@@ -1,0 +1,9 @@
+DATABASE EXPLANATION
+
+
+The User Entity stores user information such as usernames, emails, and authentication data.
+The Notes Entity represents the notes or documents being worked on, including their content, titles, and timestamps.
+The User_Note table defines access levels for users collaborating on a note.
+The Note_Change table records all modifications for audit and rollback purposes.
+The Note_Version table allows us to store and manage multiple notes versions.
+The ShareLink table facilitates the sharing of notes via links with specific permissions and expiration dates.

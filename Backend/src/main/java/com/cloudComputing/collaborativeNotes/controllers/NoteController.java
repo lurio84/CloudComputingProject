@@ -92,14 +92,14 @@ public class NoteController {
     }
 
     // Method to apply the received diff to the original content
-    private String applyDiffToContent(String diff, String originalContent) {
+    protected String applyDiffToContent(String diff, String originalContent) {
         LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(diff);
         Object[] result = dmp.patchApply(patches, originalContent);
         return (String) result[0];
     }
 
     // Method to determine the type of change based on the content of the diff
-    private NoteChange.ChangeType determineChangeType(String diff) {
+    protected NoteChange.ChangeType determineChangeType(String diff) {
         LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(diff);
         for (DiffMatchPatch.Patch patch : patches) {
             for (DiffMatchPatch.Diff diffItem : patch.diffs) {

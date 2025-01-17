@@ -15,11 +15,15 @@ import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class NoteService {
@@ -41,28 +45,66 @@ public class NoteService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     private final DiffMatchPatch dmp = new DiffMatchPatch();
 
-    public Note applyDiffToNote(DiffRequest diffRequest) {
+    private static final String DIFF_CACHE_KEY_PREFIX = "diff_cache_";
+
+    public void applyDiffAndNotifyClients(DiffRequest diffRequest) {
         validateDiffRequest(diffRequest);
 
         Note note = getNoteById(diffRequest.getNoteId());
         User user = getUserById(diffRequest.getUserId());
 
-        String originalContent = note.getContent();
-        String updatedContent = applyDiffToContent(diffRequest.getDiff(), originalContent);
-
-        note.setContent(updatedContent);
-        noteRepository.save(note);
-
-        NoteChange.ChangeType changeType = determineChangeType(diffRequest.getDiff());
-        saveNoteChange(note, user, diffRequest.getDiff(), changeType);
+        // Accumulate the diff in Redis
+        String cacheKey = DIFF_CACHE_KEY_PREFIX + note.getId();
+        redisTemplate.opsForList().rightPush(cacheKey, diffRequest.getDiff());
+        redisTemplate.expire(cacheKey, 30, TimeUnit.MINUTES); // TTL of 30 minutes for diffs
 
         // Notify other clients
         messagingTemplate.convertAndSend("/topic/notes/" + note.getId(), diffRequest);
-        logger.info("Diff applied and sent to clients for noteId: {}", note.getId());
+        logger.info("Diff cached and sent to clients for noteId: {}", note.getId());
+    }
 
-        return note;
+    @Scheduled(fixedRate = 20000) // Every 20 seconds
+    public void processAndSaveCachedDiffs() {
+        // Retrieve all cache keys corresponding to notes
+        Set<String> keys = redisTemplate.keys(DIFF_CACHE_KEY_PREFIX + "*");
+        if (keys == null || keys.isEmpty()) {
+            return;
+        }
+
+        for (String cacheKey : keys) {
+            Long noteId = extractNoteIdFromCacheKey(cacheKey);
+
+            // Process accumulated diffs
+            LinkedList<Object> cachedDiffs = new LinkedList<>(redisTemplate.opsForList().range(cacheKey, 0, -1));
+            if (cachedDiffs.isEmpty()) {
+                continue;
+            }
+
+            Note note = getNoteById(noteId);
+            String updatedContent = note.getContent();
+
+            for (Object cachedDiff : cachedDiffs) {
+                updatedContent = applyDiffToContent((String) cachedDiff, updatedContent);
+            }
+
+            // Save to the database
+            note.setContent(updatedContent);
+            note.setUpdatedAt(LocalDateTime.now());
+            noteRepository.save(note);
+
+            // Clear the cache after saving
+            redisTemplate.delete(cacheKey);
+            logger.info("Saved and cleared cached diffs for noteId: {}", noteId);
+        }
+    }
+
+    private Long extractNoteIdFromCacheKey(String cacheKey) {
+        return Long.valueOf(cacheKey.replace(DIFF_CACHE_KEY_PREFIX, ""));
     }
 
     public Note getNoteById(Long noteId) {

@@ -21,7 +21,7 @@ public class NoteController {
 
     @MessageMapping("/edit")
     public void handleEdit(@RequestBody DiffRequest diffRequest) {
-        noteService.applyDiffToNote(diffRequest);
+        noteService.applyDiffAndNotifyClients(diffRequest);
         ResponseEntity.ok().build();
     }
 

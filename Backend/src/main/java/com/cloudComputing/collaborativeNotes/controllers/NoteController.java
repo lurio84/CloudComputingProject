@@ -37,10 +37,19 @@ public class NoteController {
         ResponseEntity.ok().build();
     }
 
+    // Modified to accept RequestParam
     @PostMapping
-    public ResponseEntity<Note> createNote(@RequestBody Note newNote) {
-        Note createdNote = noteService.createNote(newNote);
-        return ResponseEntity.ok(createdNote);
+    public ResponseEntity<Note> createNote(
+            @RequestParam String title,
+            @RequestParam String content,
+            @RequestParam Long userId) {
+        Note newNote = new Note();
+        newNote.setTitle(title);
+        newNote.setContent(content);
+
+        // It is assumed that the createNote method handles the user and other relationships
+        Note createdNote = noteService.createNote(newNote, userId);
+        return ResponseEntity.status(201).body(createdNote);
     }
 
     @PostMapping("/{noteId}/assignUser")
@@ -48,6 +57,4 @@ public class NoteController {
         noteService.assignUserToNote(noteId, userId);
         return ResponseEntity.ok().build();
     }
-
-
 }

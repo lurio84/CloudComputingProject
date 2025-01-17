@@ -77,22 +77,41 @@ public class NoteService {
 
     public void assignUserToNote(Long noteId, Long userId) {
         Note note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new RuntimeException("Nota no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Note not found"));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Crear la relación entre la nota y el usuario
+        // Create the relationship between the note and the user
         UserNote userNote = new UserNote();
         userNote.setNote(note);
         userNote.setUser(user);
-        userNote.setAccessLevel("editor"); // Establece el nivel de acceso por defecto o según el requerimiento
+        userNote.setAccessLevel(UserNote.AccessLevel.EDITOR); // Set the default access level or customize as needed
+        userNote.setAddedAt(LocalDateTime.now());
         userNoteRepository.save(userNote);
     }
 
-    public Note createNote(Note newNote) {
+    public Note createNote(Note newNote, Long userId) {
+        // Fetch the user from the database
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Set the creation and update timestamps
+        newNote.setCreatedAt(LocalDateTime.now());
+        newNote.setUpdatedAt(LocalDateTime.now());
+
+        // Create the UserNote relationship
+        UserNote userNote = new UserNote();
+        userNote.setUser(user);
+        userNote.setNote(newNote);
+        userNote.setAccessLevel(UserNote.AccessLevel.EDITOR); // Assign a default access level
+        userNote.setAddedAt(LocalDateTime.now());
+
+        // Add the relationship to the note's user notes collection
+        newNote.getUserNotes().add(userNote);
+
+        // Save the note (cascading also saves UserNote)
         return noteRepository.save(newNote);
     }
-
 
     private void validateDiffRequest(DiffRequest diffRequest) {
         if (diffRequest == null || diffRequest.getDiff() == null || diffRequest.getDiff().isEmpty()) {

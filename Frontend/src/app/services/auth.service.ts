@@ -10,6 +10,7 @@ import { tap } from 'rxjs/operators';
 export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   private userId: number | null = null;
+  baseURL = 'http://localhost:8080/';
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -17,13 +18,14 @@ export class AuthService {
    * Login method to authenticate the user.
    * @param userId - The user ID to login with
    */
-  login(userId: number): Observable<any> {
-    return this.http.post<any>('http://localhost:8080/login', { userId }).pipe(
+  login(form: any): Observable<any> {
+    return this.http.post<any>(`${this.baseURL}users`, form).pipe(
       tap((response) => {
-        if (response.success) {
+        console.log(response)
+        if (response) {
           this.isAuthenticatedSubject.next(true);
-          this.userId = userId;
-          localStorage.setItem('userId', String(userId));
+          this.userId = response.id;
+          localStorage.setItem('collaborativeNote', String(response.id));
         }
       })
     );
@@ -34,8 +36,7 @@ export class AuthService {
    */
   logout(): void {
     this.isAuthenticatedSubject.next(false);
-    this.userId = null;
-    localStorage.removeItem('userId');
+    localStorage.removeItem('collaborativeNote');
     this.router.navigate(['/login']);
   }
 
@@ -51,6 +52,10 @@ export class AuthService {
    */
   getUserId(): number | null {
     return this.userId || Number(localStorage.getItem('userId'));
+  }
+
+  getUserInfo(userId: number){
+    return this.http.get<any>(`${this.baseURL}users/${userId}`);
   }
 
   /**

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+import static com.cloudComputing.collaborativeNotes.database.entities.UserNote.AccessLevel.EDITOR;
+
 // Seeder class for UserNote entity
 @Component
 public class UserNoteSeeder {
@@ -33,7 +35,7 @@ public class UserNoteSeeder {
             UserNote userNote = new UserNote();
             userNote.setUser(user);
             userNote.setNote(note);
-            userNote.setAccessLevel("editor");
+            userNote.setAccessLevel(EDITOR);
             userNote.setAddedAt(LocalDateTime.now());
             userNoteRepository.save(userNote); // Save the user-note relationship to the database
         }

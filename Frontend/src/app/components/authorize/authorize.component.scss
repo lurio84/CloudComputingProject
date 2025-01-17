@@ -1,0 +1,12 @@
+.display-center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  //min-width: 400px;
+}
+
+.card{
+  background-color: rgba(0,0,0, 0.2);
+  box-shadow: 5px 6px 5px rgba(0,0,0, 0.3);
+  border: 1px solid rgba(0,0,0, 0.1);
+}

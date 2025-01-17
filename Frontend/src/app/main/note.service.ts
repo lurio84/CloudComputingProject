@@ -10,11 +10,11 @@ export class NoteService {
   private readonly _baseUrl: string;
 
   constructor(private http: HttpClient) {
-    this._baseUrl = ' Environment.apis.url';
+    this._baseUrl = 'http://localhost:8080/';
   }
 
   get(id: number): Observable<any> {
     return this.http
-      .get<any>(`${this._baseUrl}/events/${id}/`)
+      .get<any>(`${this._baseUrl}notes/${id}`)
   }
 }

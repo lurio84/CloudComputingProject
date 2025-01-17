@@ -1,0 +1,35 @@
+<div class="row h-100 w-100">
+  <div class=" display-center h-100 ">
+<div style="width: 400px">
+    <mat-card class="card" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Welcome to Collaborative Note</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+
+        <div >
+          <h2>Login</h2>
+          <form (ngSubmit)="login()">
+          <div >
+            <mat-form-field style="width: 100%"  >
+              <mat-label >User ID</mat-label>
+              <input matInput [(ngModel)]="userId" name="userId" required min="1">
+            </mat-form-field>
+          </div>
+
+
+           <div style="display: flex;justify-content: end; margin-bottom:12px">
+             <button mat-flat-button type="submit" color="primary">Login</button>
+           </div>
+          </form>
+        </div>
+
+
+      </mat-card-content>
+      <mat-card-footer class="example-card-footer">
+
+      </mat-card-footer>
+    </mat-card>
+  </div>
+</div>
+</div>

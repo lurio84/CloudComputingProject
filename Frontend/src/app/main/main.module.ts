@@ -29,7 +29,7 @@ import {NgxEditorModule} from "ngx-editor";
     MatBadgeModule,
     FormsModule,
     NgxEditorModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ]
 })
 export class MainModule { }

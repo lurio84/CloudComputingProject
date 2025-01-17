@@ -17,7 +17,7 @@ public class NoteVersionScheduler {
     @Autowired
     private NoteRepository noteRepository;
 
-    @Scheduled(fixedRate = 10000) // Every 10 seconds
+    @Scheduled(fixedRate = 30000) // Every 30 seconds
     public void autoSaveAllNoteVersions() {
         // Get all notes from the database
         List<Note> allNotes = noteRepository.findAll();

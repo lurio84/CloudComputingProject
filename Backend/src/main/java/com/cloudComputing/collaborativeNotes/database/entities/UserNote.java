@@ -13,12 +13,12 @@ public class UserNote {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonBackReference
+    @JsonBackReference(value = "user-userNote")
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "note_id")
-    @JsonBackReference
+    @JsonBackReference(value = "note-userNote")
     private Note note;
 
     private String accessLevel;

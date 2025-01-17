@@ -14,7 +14,7 @@ public class NoteChange {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "note_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference(value = "note-noteChange")
     private Note note;
 
     @ManyToOne(fetch = FetchType.LAZY)

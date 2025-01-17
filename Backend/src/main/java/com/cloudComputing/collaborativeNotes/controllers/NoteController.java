@@ -36,4 +36,18 @@ public class NoteController {
         noteVersionService.saveNoteVersion(noteId, userId);
         ResponseEntity.ok().build();
     }
+
+    @PostMapping
+    public ResponseEntity<Note> createNote(@RequestBody Note newNote) {
+        Note createdNote = noteService.createNote(newNote);
+        return ResponseEntity.ok(createdNote);
+    }
+
+    @PostMapping("/{noteId}/assignUser")
+    public ResponseEntity<?> assignUserToNote(@PathVariable Long noteId, @RequestParam Long userId) {
+        noteService.assignUserToNote(noteId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+
 }

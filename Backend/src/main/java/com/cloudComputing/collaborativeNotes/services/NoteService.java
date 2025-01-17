@@ -3,8 +3,10 @@ package com.cloudComputing.collaborativeNotes.services;
 import com.cloudComputing.collaborativeNotes.database.entities.Note;
 import com.cloudComputing.collaborativeNotes.database.entities.NoteChange;
 import com.cloudComputing.collaborativeNotes.database.entities.User;
+import com.cloudComputing.collaborativeNotes.database.entities.UserNote;
 import com.cloudComputing.collaborativeNotes.database.repositories.NoteChangeRepository;
 import com.cloudComputing.collaborativeNotes.database.repositories.NoteRepository;
+import com.cloudComputing.collaborativeNotes.database.repositories.UserNoteRepository;
 import com.cloudComputing.collaborativeNotes.database.repositories.UserRepository;
 import com.cloudComputing.collaborativeNotes.exceptions.NoteNotFoundException;
 import com.cloudComputing.collaborativeNotes.exceptions.UserNotFoundException;
@@ -32,6 +34,9 @@ public class NoteService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserNoteRepository userNoteRepository;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -69,6 +74,25 @@ public class NoteService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
     }
+
+    public void assignUserToNote(Long noteId, Long userId) {
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new RuntimeException("Nota no encontrada"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Crear la relación entre la nota y el usuario
+        UserNote userNote = new UserNote();
+        userNote.setNote(note);
+        userNote.setUser(user);
+        userNote.setAccessLevel("editor"); // Establece el nivel de acceso por defecto o según el requerimiento
+        userNoteRepository.save(userNote);
+    }
+
+    public Note createNote(Note newNote) {
+        return noteRepository.save(newNote);
+    }
+
 
     private void validateDiffRequest(DiffRequest diffRequest) {
         if (diffRequest == null || diffRequest.getDiff() == null || diffRequest.getDiff().isEmpty()) {

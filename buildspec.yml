@@ -9,10 +9,12 @@ phases:
       - mvn install -DskipTests  # installフェーズで必要な依存関係をインストール
 
   build:
-    commands:
-      - echo Building the application...
-      - mvn clean install -DskipTests  # ビルドを行う
-      - ls -alh target/  # targetディレクトリの中身を表示し、JARファイルがあるか確認
+  commands:
+    - echo Building the application...
+    - mvn clean install -DskipTests
+    - ls -alh target/  # targetディレクトリ内を確認
+    - docker build -t $ImageName -f ./Dockerfile .  # ビルドコンテキストを確認
+
 
   post_build:
     commands:

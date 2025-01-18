@@ -6,17 +6,17 @@ phases:
       java: corretto17
     commands:
       - echo Installing dependencies...
-      - mvn install -DskipTests
+      - mvn install -DskipTests  # installフェーズで必要な依存関係をインストール
 
   build:
     commands:
       - echo Building the application...
-      - mvn clean install -DskipTests
-      - ls -alh target/
+      - mvn clean install -DskipTests  # ビルドを行う
+      - ls -alh target/  # targetディレクトリの中身を表示し、JARファイルがあるか確認
 
   post_build:
     commands:
       - echo Build completed.
-      - docker build -t $ImageName -f ./Dockerfile .
-      - docker tag $ImageName:latest 211125652233.dkr.ecr.eu-north-1.amazonaws.com/$ImageName:latest
-      - docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/$ImageName:latest
+      - docker build -t $ImageName -f ./Dockerfile .  # Dockerイメージをビルド
+      - docker tag $ImageName:latest 211125652233.dkr.ecr.eu-north-1.amazonaws.com/$ImageName:latest  # タグを付ける
+      - docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/$ImageName:latest  # DockerイメージをECRにプッシュ

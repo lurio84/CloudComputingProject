@@ -1,18 +1,35 @@
 version: 0.2
+
 phases:
-  pre_build:
+  install:
+    runtime-versions:
+      java: corretto11
     commands:
-      - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 211125652233.dkr.ecr.us-east-1.amazonaws.com)
-  pre_build:
+      # install Maven
+      echo Installing Maven...
+      yum install -y maven
+  build:
     commands:
-      - echo "Building project with Maven..."
-      - cd Backend
-      - mvn clean package -DskipTests
+      # MavenでSpring BootアプリケーションのJARファイルをビルド
+      echo Building JAR file...
+      mvn clean install -DskipTests
+      # Dockerイメージをビルド
+      echo Building Docker image...
+      docker build -t 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborative-notes .
+
   post_build:
     commands:
-      - echo Pushing the Docker image to Amazon ECR...
-      - docker push 211125652233.dkr.ecr.us-east-1.amazonaws.com/collaborative-notes:latest
+      # ECRにログイン
+      echo Logging in to Amazon ECR...
+      $(aws ecr get-login --no-include-email --region your-region)
+      # ECRリポジトリにタグ付け
+      echo Tagging Docker image...
+      docker tag your-ecr-repository-name:latest 211125652233.dkr.ecr.your-region.amazonaws.com/211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborative-notes:latest
+      # DockerイメージをECRにプッシュ
+      echo Pushing Docker image to ECR...
+      docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborative-notes:latest
+
 artifacts:
   files:
-    - "**/*"
+    - target/*.jar
+  discard-paths: yes

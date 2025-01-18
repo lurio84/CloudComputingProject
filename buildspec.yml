@@ -7,6 +7,7 @@ phases:
   pre_build:
     commands:
       - echo "Building project with Maven..."
+      - cd Backend
       - mvn clean package -DskipTests
   post_build:
     commands:

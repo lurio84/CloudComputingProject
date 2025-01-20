@@ -1,0 +1,24 @@
+version: 0.2
+
+runtime-versions:
+  java: corretto17  # ここで指定することで、CodeBuildにJavaのバージョンを指定
+
+phases:
+  install:
+    commands:
+      - echo Installing dependencies...
+      - mvn install -DskipTests  # installフェーズで必要な依存関係をインストール
+
+  build:
+    commands:
+      - echo Building the application...
+      - mvn clean install -DskipTests
+      - ls -alh target/  # targetディレクトリ内を確認
+      - docker build -t $ImageName -f ./Dockerfile .  # ビルドコンテキストを確認
+
+  post_build:
+    commands:
+      - echo Build completed.
+      - docker build -t $ImageName -f ./Dockerfile .  # Dockerイメージをビルド
+      - docker tag $ImageName:latest 211125652233.dkr.ecr.eu-north-1.amazonaws.com/$ImageName:latest  # タグを付ける
+      - docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/$ImageName:latest  # DockerイメージをECRにプッシュ

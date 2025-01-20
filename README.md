@@ -1,6 +1,6 @@
 # CollaborativeNotes
 
-CollaborativeNotes is a cloud-based application similar to Notion or Google Docs, aimed at allowing multiple users to simultaneously edit a shared text file. This application is designed to be simple and focuses solely on text editing without implementing support for images or other complex formatting. The application uses a Spring Boot backend with MariaDB as the database, and the front end is being developed separately using Angular.
+CollaborativeNotes is a cloud-based application similar to Notion or Google Docs, aimed at allowing multiple users to simultaneously edit a shared text file. This application is designed to be simple and focuses solely on text editing without implementing support for images or other complex formatting. The application uses a Spring Boot backend with MariaDB as the database, Redis for caching and real-time data management, and the front end is being developed separately using Angular.
 
 ## Features
 
@@ -9,11 +9,13 @@ CollaborativeNotes is a cloud-based application similar to Notion or Google Docs
 - **Access Levels**: Notes can be shared with different access levels for users (editor/viewer).
 - **Share via Links**: Notes can be shared using unique links that provide specific permissions.
 - **Version Control**: A version control mechanism is implemented for tracking changes and maintaining a history of edits.
+- **Caching with Redis**: Redis is used for temporarily storing and processing real-time changes to improve performance and reduce database load.
 
 ## Tech Stack
 
 - **Backend**: Spring Boot
 - **Database**: MariaDB
+- **Cache**: Redis
 - **Frontend**: Angular
 - **Real-time Collaboration**: WebSockets
 
@@ -21,13 +23,14 @@ CollaborativeNotes is a cloud-based application similar to Notion or Google Docs
 
 The backend code is structured as follows:
 
-- `configs`: Contains configuration classes, such as `WebSocketConfig` and `DatabaseSeederConfig`.
+- `configs`: Contains configuration classes, such as `WebSocketConfig` and `RedisConfig`.
 - `controllers`: REST controllers that expose endpoints for interacting with the application.
 - `database`:
     - `entities`: JPA entity classes representing the database structure (`Note`, `User`, etc.).
     - `repositories`: Interfaces extending `JpaRepository` for data access operations.
     - `seeders`: Classes to seed the database with initial data (`NoteSeeder`, `UserSeeder`, etc.).
 - `models`: Classes representing data models used for WebSocket communication (`DiffRequest`).
+- `services`: Business logic for managing notes, users, and real-time collaboration, including Redis integration for caching.
 - `CollaborativeNotesApplication`: The main entry point of the Spring Boot application.
 
 ## Setting Up the Project
@@ -37,6 +40,7 @@ The backend code is structured as follows:
 - **Java 17** or higher
 - **Maven**
 - **MariaDB**: Ensure MariaDB is running locally or update the `application.properties` file for a remote connection.
+- **Redis**: Install and configure Redis locally or use a remote Redis instance. Ensure it is running on the default port (6379) or update the `application.properties` accordingly.
 
 ### Steps to Run
 
@@ -48,8 +52,9 @@ The backend code is structured as follows:
    ```sh
    cd CloudComputingProject
    ```
-3. **Set Up Database**:
+3. **Set Up Database and Cache**:
     - Create a MariaDB database named `collaborative_notes`.
+    - Install Redis and ensure it is running on `localhost:6379` (or configure it in `application.properties`).
     - Update the connection details in `src/main/resources/application.properties`.
 4. **Run the Application**:
    ```sh
@@ -58,7 +63,7 @@ The backend code is structured as follows:
 
 ### Configuration
 
-The application uses the following configuration properties in `application.properties`. Additionally, you need to set up a `.env` file at the root of the project with the basic parameters required for database connection (`DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`).
+The application uses the following configuration properties in `application.properties`. Additionally, you need to set up a `.env` file at the root of the project with the basic parameters required for database and Redis connection (`DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `REDIS_HOST`, `REDIS_PORT`).
 
 - **JPA Configuration**:
   ```properties
@@ -66,6 +71,13 @@ The application uses the following configuration properties in `application.prop
   spring.datasource.initialization-mode=always
   ```
   These settings ensure that the database schema is created at startup.
+
+- **Redis Configuration**:
+  ```properties
+  spring.redis.host=localhost
+  spring.redis.port=6379
+  ```
+  These settings ensure that the application connects to the Redis cache running locally.
 
 ### Environment Variables
 
@@ -75,7 +87,7 @@ A `.env.example` file is included in the repository. You should copy this file t
 cp .env.example .env
 ```
 
-Update the `.env` file with your specific database connection details.
+Update the `.env` file with your specific database and Redis connection details.
 
 ## Database Relational Model
 
@@ -162,12 +174,12 @@ The `ShareLink` table facilitates the sharing of notes via links with specific p
 ### **Differences Between Note_Change and Note_Version Tables**
 The main difference between `Note_Change` and `Note_Version` is:
 
-- **`Note_Change`**: Stores **individual changes**, which are small, incremental edits, ideal for real-time collaboration and change tracking.
+- **`Note_Change`**: Stores **individual changes**, which are small, incremental edits, ideal for real-time collaboration and change tracking. Redis is used to temporarily cache these changes before saving them in the database.
 - **`Note_Version`**: Stores **entire document versions**, representing the complete state of the document at a specific point in time, which is crucial for version control and recovery.
 
 - **Purpose**:
-  - The `Note_Change` table is essential for **real-time collaboration**.
-  - The `Note_Version` table is essential for **recovery** and **version control**.
+    - The `Note_Change` table is essential for **real-time collaboration**, leveraging Redis for efficiency.
+    - The `Note_Version` table is essential for **recovery** and **version control**.
 
 ## Contributing
 
@@ -176,4 +188,3 @@ Contributions are welcome! If you'd like to contribute to the project, please fo
 ## License
 
 This project is licensed under the MIT License.
-

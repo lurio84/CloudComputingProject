@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -51,6 +52,7 @@ public class NoteService {
     private final DiffMatchPatch dmp = new DiffMatchPatch();
 
     private static final String DIFF_CACHE_KEY_PREFIX = "diff_cache_";
+    private static final String DIFF_LIST_KEY_PREFIX = "diff_list_";
 
     public void applyDiffAndNotifyClients(DiffRequest diffRequest) {
         validateDiffRequest(diffRequest);
@@ -58,10 +60,14 @@ public class NoteService {
         Note note = getNoteById(diffRequest.getNoteId());
         User user = getUserById(diffRequest.getUserId());
 
-        // Accumulate the diff in Redis
+        // Accumulate the diff in Redis for both content update and persistence
         String cacheKey = DIFF_CACHE_KEY_PREFIX + note.getId();
+        String diffListKey = DIFF_LIST_KEY_PREFIX + note.getId();
+
         redisTemplate.opsForList().rightPush(cacheKey, diffRequest.getDiff());
+        redisTemplate.opsForList().rightPush(diffListKey, diffRequest);
         redisTemplate.expire(cacheKey, 30, TimeUnit.MINUTES); // TTL of 30 minutes for diffs
+        redisTemplate.expire(diffListKey, 30, TimeUnit.MINUTES); // TTL of 30 minutes for diffs
 
         // Notify other clients
         messagingTemplate.convertAndSend("/topic/notes/" + note.getId(), diffRequest);
@@ -72,33 +78,48 @@ public class NoteService {
     public void processAndSaveCachedDiffs() {
         // Retrieve all cache keys corresponding to notes
         Set<String> keys = redisTemplate.keys(DIFF_CACHE_KEY_PREFIX + "*");
-        if (keys == null || keys.isEmpty()) {
+        if (keys.isEmpty()) {
             return;
         }
 
         for (String cacheKey : keys) {
             Long noteId = extractNoteIdFromCacheKey(cacheKey);
+            String diffListKey = DIFF_LIST_KEY_PREFIX + noteId;
 
             // Process accumulated diffs
-            LinkedList<Object> cachedDiffs = new LinkedList<>(redisTemplate.opsForList().range(cacheKey, 0, -1));
-            if (cachedDiffs.isEmpty()) {
+            LinkedList<Object> cachedDiffs = new LinkedList<>(Objects.requireNonNull(redisTemplate.opsForList().range(cacheKey, 0, -1)));
+            LinkedList<Object> cachedDiffRequests = new LinkedList<>(Objects.requireNonNull(redisTemplate.opsForList().range(diffListKey, 0, -1)));
+
+            if (cachedDiffs.isEmpty() || cachedDiffRequests.isEmpty()) {
                 continue;
             }
 
             Note note = getNoteById(noteId);
             String updatedContent = note.getContent();
 
+            // Consolidate all diffs into a single diff string
+            StringBuilder consolidatedDiff = new StringBuilder();
             for (Object cachedDiff : cachedDiffs) {
                 updatedContent = applyDiffToContent((String) cachedDiff, updatedContent);
+                consolidatedDiff.append(cachedDiff).append("\n");
             }
 
-            // Save to the database
+            // Determine the aggregated change type
+            NoteChange.ChangeType aggregatedChangeType = determineAggregatedChangeType(consolidatedDiff.toString());
+
+            // Save the note content to the database
             note.setContent(updatedContent);
             note.setUpdatedAt(LocalDateTime.now());
             noteRepository.save(note);
 
+            // Save the consolidated diff as a single record in the database
+            DiffRequest firstDiffRequest = (DiffRequest) cachedDiffRequests.getFirst();
+            User user = getUserById(firstDiffRequest.getUserId());
+            saveNoteChange(note, user, consolidatedDiff.toString(), aggregatedChangeType);
+
             // Clear the cache after saving
             redisTemplate.delete(cacheKey);
+            redisTemplate.delete(diffListKey);
             logger.info("Saved and cleared cached diffs for noteId: {}", noteId);
         }
     }
@@ -167,18 +188,30 @@ public class NoteService {
         return (String) result[0];
     }
 
-    private NoteChange.ChangeType determineChangeType(String diff) {
-        LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(diff);
+    private NoteChange.ChangeType determineAggregatedChangeType(String consolidatedDiff) {
+        boolean hasInsert = false;
+        boolean hasDelete = false;
+
+        LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(consolidatedDiff);
         for (DiffMatchPatch.Patch patch : patches) {
-            for (DiffMatchPatch.Diff diffItem : patch.diffs) {
-                if (diffItem.operation == DiffMatchPatch.Operation.INSERT) {
-                    return NoteChange.ChangeType.ADDED;
-                } else if (diffItem.operation == DiffMatchPatch.Operation.DELETE) {
-                    return NoteChange.ChangeType.DELETED;
+            for (DiffMatchPatch.Diff diff : patch.diffs) {
+                if (diff.operation == DiffMatchPatch.Operation.INSERT) {
+                    hasInsert = true;
+                } else if (diff.operation == DiffMatchPatch.Operation.DELETE) {
+                    hasDelete = true;
                 }
             }
         }
-        return NoteChange.ChangeType.EDITED;
+
+        if (hasInsert && hasDelete) {
+            return NoteChange.ChangeType.EDITED;
+        } else if (hasInsert) {
+            return NoteChange.ChangeType.ADDED;
+        } else if (hasDelete) {
+            return NoteChange.ChangeType.DELETED;
+        } else {
+            return NoteChange.ChangeType.UNCHANGED;
+        }
     }
 
     private void saveNoteChange(Note note, User user, String diff, NoteChange.ChangeType changeType) {

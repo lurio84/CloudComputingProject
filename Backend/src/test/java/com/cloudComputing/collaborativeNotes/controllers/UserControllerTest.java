@@ -69,34 +69,43 @@ public class UserControllerTest {
     @Test
     void testCreateUserSuccess() {
         // Arrange
-        User newUser = new User();
-        newUser.setUsername("New User");
+        String username = "New User";
+        String email = "newuser@example.com";
+        String password = "password123";
 
         User savedUser = new User();
         savedUser.setId(1L);
-        savedUser.setUsername("New User");
+        savedUser.setUsername(username);
+        savedUser.setEmail(email);
+        savedUser.setPassword(password);
 
-        when(userRepository.save(newUser)).thenReturn(savedUser);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            user.setId(1L); // Simular el ID generado por la base de datos
+            return user;
+        });
 
         // Act
-        ResponseEntity<User> response = userController.createUser(newUser);
+        ResponseEntity<User> response = userController.createUser(username, email, password);
 
         // Assert
         assertEquals(201, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals(savedUser, response.getBody());
+        assertEquals(username, response.getBody().getUsername());
+        assertEquals(email, response.getBody().getEmail());
     }
 
     @Test
     void testCreateUserInternalError() {
         // Arrange
-        User newUser = new User();
-        newUser.setUsername("New User");
+        String username = "New User";
+        String email = "newuser@example.com";
+        String password = "password123";
 
-        when(userRepository.save(newUser)).thenThrow(new RuntimeException("Database error"));
+        when(userRepository.save(any(User.class))).thenThrow(new RuntimeException("Database error"));
 
         // Act
-        ResponseEntity<User> response = userController.createUser(newUser);
+        ResponseEntity<User> response = userController.createUser(username, email, password);
 
         // Assert
         assertEquals(500, response.getStatusCode().value());

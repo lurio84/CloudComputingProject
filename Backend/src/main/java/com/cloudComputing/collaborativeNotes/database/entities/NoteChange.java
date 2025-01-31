@@ -89,6 +89,7 @@ public class NoteChange {
     public enum ChangeType {
         ADDED,
         EDITED,
-        DELETED
+        DELETED,
+        UNCHANGED
     }
 }

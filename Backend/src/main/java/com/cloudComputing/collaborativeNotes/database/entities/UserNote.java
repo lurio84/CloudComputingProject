@@ -9,28 +9,31 @@ import java.time.LocalDateTime;
 public class UserNote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id") // To maintain compatibility with the existing database schema
+    private Long userNoteId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonBackReference(value = "user-userNote")
+    @JsonBackReference(value = "user-userNote") // Prevent circular serialization of user references
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "note_id")
-    @JsonBackReference(value = "note-userNote")
+    @JsonBackReference(value = "note-userNote") // Prevent circular serialization of note references
     private Note note;
 
-    private String accessLevel;
+    @Enumerated(EnumType.STRING)
+    private AccessLevel accessLevel;
+
     private LocalDateTime addedAt;
 
     // Getters and Setters
-    public Long getId() {
-        return id;
+    public Long getUserNoteId() {
+        return userNoteId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUserNoteId(Long userNoteId) {
+        this.userNoteId = userNoteId;
     }
 
     public User getUser() {
@@ -49,11 +52,11 @@ public class UserNote {
         this.note = note;
     }
 
-    public String getAccessLevel() {
+    public AccessLevel getAccessLevel() {
         return accessLevel;
     }
 
-    public void setAccessLevel(String accessLevel) {
+    public void setAccessLevel(AccessLevel accessLevel) {
         this.accessLevel = accessLevel;
     }
 
@@ -63,5 +66,10 @@ public class UserNote {
 
     public void setAddedAt(LocalDateTime addedAt) {
         this.addedAt = addedAt;
+    }
+
+    public enum AccessLevel {
+        EDITOR,
+        VIEWER
     }
 }

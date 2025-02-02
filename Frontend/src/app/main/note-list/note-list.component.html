@@ -9,7 +9,7 @@
         <mat-card-content class="createButton">Create a new Note </mat-card-content>
       </mat-card>
     </mat-grid-tile>
-    <mat-grid-tile *ngFor="let note of noteList" style="margin-left: 20px">
+    <mat-grid-tile *ngFor="let note of noteList" >
       <mat-card appearance="outlined" class="box cursor-pointer" (click)="openNote(note)">
         <mat-card-content class="createButton">
           {{note.title}}

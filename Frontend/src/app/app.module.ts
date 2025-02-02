@@ -7,7 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {HttpClientModule} from "@angular/common/http";
 import { AuthorizeComponent } from './components/authorize/authorize.component';
 import {MatCardModule} from "@angular/material/card";
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatInputModule} from "@angular/material/input";
 import {MatButtonModule} from "@angular/material/button";
 
@@ -26,6 +26,7 @@ import {MatButtonModule} from "@angular/material/button";
     FormsModule,
     MatInputModule,
     MatButtonModule,
+    ReactiveFormsModule,
 
   ],
   providers: [],

@@ -57,6 +57,11 @@ export class AuthService {
     return this.userId || Number(localStorage.getItem('collaborativeNote'));
   }
 
+  ifuserIsLogin(): any {
+    return localStorage.getItem('collaborativeNote');
+  }
+
+
   getUserInfo(userId: number){
     return this.http.get<any>(`${this.baseURL}users/${userId}`);
   }

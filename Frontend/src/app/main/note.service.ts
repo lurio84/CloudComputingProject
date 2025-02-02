@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {BehaviorSubject, Observable} from "rxjs";
 
 
@@ -17,7 +17,6 @@ export class NoteService {
   }
 
   get(id: number): void {
-    console.log('Requesting data...');
 
     this.http.get<any>(`${this._baseUrl}notes/${id}`).subscribe(
       response => {
@@ -39,6 +38,14 @@ export class NoteService {
   }
   getNotesDetail(): Observable<any> {
     return this.NoteDetail.asObservable();
+  }
+
+  createNote(form: any): Observable<any>{
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append('title', form.title);
+    queryParams = queryParams.append('content', form.content)
+    queryParams = queryParams.append('userId', form.userId)
+    return this.http.post<any>(`${this._baseUrl}notes`, '', {params: queryParams});
   }
 
 }

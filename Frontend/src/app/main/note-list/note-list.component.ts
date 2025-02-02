@@ -40,7 +40,7 @@ export class NoteListComponent implements OnInit{
   }
 
   share(e: Event) {
-    e.preventDefault();
+    e.stopPropagation();
   }
 
   openNote(note: any) {

@@ -30,9 +30,9 @@ export class AuthorizeComponent implements OnInit{
   login(): void {
     this.authService.login(this.form.value).subscribe(
       (response) => {
-        // if (response) {
-        //   this.router.navigate(['/home']); // Navigate to note editor after successful login
-        // }
+        if (response) {
+          this.router.navigate(['/']); // Navigate to note editor after successful login
+        }
       },
       (error) => {
         console.error('Login failed:', error);

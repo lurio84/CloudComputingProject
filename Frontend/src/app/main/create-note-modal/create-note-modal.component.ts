@@ -1,6 +1,9 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {FormBuilder, FormGroup} from "@angular/forms";
+import {NoteService} from "../note.service";
+import {AuthService} from "../../services/auth.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-create-note-modal',
@@ -8,21 +11,21 @@ import {FormBuilder, FormGroup} from "@angular/forms";
   styleUrls: ['./create-note-modal.component.scss']
 })
 export class CreateNoteModalComponent implements OnInit{
-  form!: FormGroup
-  // readonly dialogRef = inject(MatDialogRef<CreateNoteModalComponent>);
-
-  // onNoClick(): void {
-  //   this.dialogRef.close();
-  // }
+  form!: FormGroup;
+  userId!: number;
   constructor(    public dialogRef: MatDialogRef<CreateNoteModalComponent>,
                   private fb: FormBuilder,
-
+                  private noteService: NoteService,
+                  private AuthService: AuthService,
+                 private router: Router,
 
                   @Inject(MAT_DIALOG_DATA) public data: any,) {
   }
 
   ngOnInit() {
     this.createForm();
+    this.userId = Number(this.AuthService.getUserId())
+
   }
 
   closeDialog(): void {
@@ -38,6 +41,11 @@ export class CreateNoteModalComponent implements OnInit{
   }
 
   submitForm() {
+    const form = {...this.form.value, userId: this.userId};
+    this.noteService.createNote(form).subscribe(note=> {
+      this.dialogRef.close();
+      this.router.navigate([`/note/${note.id}`], {queryParams: {user:  this.userId, noteId: note.id}});
+    })
 
   }
 }

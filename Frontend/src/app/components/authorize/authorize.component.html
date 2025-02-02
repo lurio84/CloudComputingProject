@@ -9,17 +9,27 @@
 
         <div >
           <h2>Login</h2>
-          <form (ngSubmit)="login()">
+          <form  [formGroup]="form">
           <div >
             <mat-form-field style="width: 100%"  >
-              <mat-label >User ID</mat-label>
-              <input matInput [(ngModel)]="userId" name="userId" required min="1">
+              <mat-label >Username</mat-label>
+              <input matInput formControlName="username" name="username" required type="text">
+            </mat-form-field>
+
+            <mat-form-field style="width: 100%"  >
+              <mat-label >email</mat-label>
+              <input matInput formControlName="email" name="email" required type="email">
+            </mat-form-field>
+
+            <mat-form-field style="width: 100%"  >
+              <mat-label >password</mat-label>
+              <input matInput formControlName="password" name="password" required type="text">
             </mat-form-field>
           </div>
 
 
            <div style="display: flex;justify-content: end; margin-bottom:12px">
-             <button mat-flat-button type="submit" color="primary">Login</button>
+             <button mat-flat-button (click)="login()"  color="primary">Login</button>
            </div>
           </form>
         </div>

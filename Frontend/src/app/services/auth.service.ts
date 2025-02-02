@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -16,10 +16,13 @@ export class AuthService {
 
   /**
    * Login method to authenticate the user.
-   * @param userId - The user ID to login with
    */
   login(form: any): Observable<any> {
-    return this.http.post<any>(`${this.baseURL}users`, form).pipe(
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append('username', form.username);
+    queryParams = queryParams.append('email', form.email)
+    queryParams = queryParams.append('password', form.password)
+    return this.http.post<any>(`${this.baseURL}users`,   '', {params: queryParams}).pipe(
       tap((response) => {
         console.log(response)
         if (response) {
@@ -51,7 +54,7 @@ export class AuthService {
    * Get the currently logged-in user's ID.
    */
   getUserId(): number | null {
-    return this.userId || Number(localStorage.getItem('userId'));
+    return this.userId || Number(localStorage.getItem('collaborativeNote'));
   }
 
   getUserInfo(userId: number){
@@ -67,5 +70,9 @@ export class AuthService {
       this.userId = Number(storedUserId);
       this.isAuthenticatedSubject.next(true);
     }
+  }
+
+  getNoteList(userId: number){
+    return this.http.get<any>(`${this.baseURL}users/${userId}/notes`);
   }
 }

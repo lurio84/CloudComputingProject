@@ -1,0 +1,24 @@
+<div class="middle">
+
+  <mat-grid-list cols="4" rowHeight="2:1">
+    <mat-grid-tile >
+      <mat-card appearance="outlined" class="box cursor-pointer" (click)="createNote()">
+        <div style="margin: auto">
+          <mat-icon>add</mat-icon>
+        </div>
+        <mat-card-content class="createButton">Create a new Note </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+    <mat-grid-tile *ngFor="let note of noteList" style="margin-left: 20px">
+      <mat-card appearance="outlined" class="box cursor-pointer" (click)="openNote(note)">
+        <mat-card-content class="createButton">
+          {{note.title}}
+        </mat-card-content>
+        <mat-card-actions  style="margin-left: auto;">
+          <button (click)="share($event)" mat-icon-button> <mat-icon>share</mat-icon></button>
+        </mat-card-actions>
+      </mat-card>
+    </mat-grid-tile>
+
+  </mat-grid-list>
+</div>

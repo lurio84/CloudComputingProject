@@ -21,7 +21,7 @@ export class AuthorizeComponent implements OnInit{
 
   createForm() {
     this.form = this.fb.group({
-      username: ['test'],
+      username: ['tes@tes'],
       email: ['tes@tes'],
       password: [12345678],
     });

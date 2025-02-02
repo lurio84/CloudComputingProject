@@ -1,6 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Editor } from 'ngx-editor';
 import {WebSocketService} from "../../services/web-socket.service";
+import {ActivatedRoute, Router} from "@angular/router";
+import {NoteService} from "../note.service";
 
 
 @Component({
@@ -10,10 +12,22 @@ import {WebSocketService} from "../../services/web-socket.service";
 })
 export class TextEditorComponent implements OnInit, OnDestroy {
   editor!: Editor;
-  content: string = '<p>Start typing here...</p>';
+  content: string = '<p></p>';
   private debounceTimer: any;
+  userId!: number;
+  noteId!: number;
 
-  constructor(private webSocketService: WebSocketService) {}
+  noteDetails: any ;
+
+  constructor(private webSocketService: WebSocketService,
+              private route:ActivatedRoute,
+              private noteService: NoteService,
+              private router: Router) {
+    this.userId = this.route.snapshot.queryParams['user'];
+    this.noteId = this.route.snapshot.queryParams['noteId'];
+
+
+  }
 
   ngOnInit(): void {
     this.editor = new Editor();
@@ -25,6 +39,12 @@ export class TextEditorComponent implements OnInit, OnDestroy {
         this.content = message.content;
       }
     });
+    this.noteService.get(this.noteId);
+    this.noteService.getNotesDetail().subscribe((res:any)=> {
+      this.noteDetails = res;
+      this.content = res.content;
+
+    })
   }
 
   /**
@@ -35,8 +55,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
     this.debounceTimer = setTimeout(() => {
       const message = {
-        noteId: 1, // Example note ID
-        userId: 1, // Example user ID
+        noteId: this.noteId, // Example note ID
+        userId: this.userId, // Example user ID
         content: newContent,
       };
       this.webSocketService.send(message); // Send the updated content via WebSocket
@@ -46,5 +66,9 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.editor?.destroy();
     this.webSocketService.close();
+  }
+
+  back() {
+    this.router.navigate(['/'])
   }
 }

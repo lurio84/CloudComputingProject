@@ -4,10 +4,10 @@ import {AuthorizeComponent} from "./components/authorize/authorize.component";
 
 const routes: Routes = [
   {
-    path: '', component: AuthorizeComponent
+    path: 'login', component: AuthorizeComponent
   },
   {
-    path: 'home',
+    path: '',
     loadChildren: () => import('./main/main.module').then((m) => m.MainModule),
   },
   {path: '**', redirectTo: 'home'}

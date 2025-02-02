@@ -1,0 +1,29 @@
+<mat-card class="cursor-pointer">
+  <h2 mat-dialog-title>Create a Note</h2>
+  <mat-dialog-content>
+
+    <form action="">
+      <div >
+        <mat-form-field style="width: 100%"  >
+          <mat-label >Title</mat-label>
+          <input matInput formControlName="title" name="title" required type="text">
+        </mat-form-field>
+      </div>
+      <div>
+        <mat-form-field style="width: 100%" >
+          <mat-label>content</mat-label>
+
+          <textarea matInput
+                    formControlName="content"
+               ></textarea>
+        </mat-form-field>
+      </div>
+    </form>
+
+  </mat-dialog-content>
+  <mat-dialog-actions style="margin-left: auto; padding:15px 20px">
+    <button mat-button (click)="closeDialog()">Cancel</button>
+    <button mat-button (click)="submitForm()" cdkFocusInitial color="primary">Save</button>
+  </mat-dialog-actions>
+
+</mat-card>

@@ -18,6 +18,8 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import { NoteListComponent } from './note-list/note-list.component';
+import { ShareDialogComponent } from './share-dialog/share-dialog.component';
+import {ClipboardModule} from "@angular/cdk/clipboard";
 
 
 
@@ -27,7 +29,8 @@ import { NoteListComponent } from './note-list/note-list.component';
     ToolBarComponent,
     TextEditorComponent,
     CreateNoteModalComponent,
-    NoteListComponent
+    NoteListComponent,
+    ShareDialogComponent
   ],
   imports: [
     CommonModule,
@@ -44,6 +47,7 @@ import { NoteListComponent } from './note-list/note-list.component';
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
+    ClipboardModule,
   ],
 })
 export class MainModule { }

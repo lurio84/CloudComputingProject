@@ -44,7 +44,7 @@ export class CreateNoteModalComponent implements OnInit{
     const form = {...this.form.value, userId: this.userId};
     this.noteService.createNote(form).subscribe(note=> {
       this.dialogRef.close();
-      this.router.navigate([`/note/${note.id}`], {queryParams: {user:  this.userId, noteId: note.id}});
+      this.router.navigate([`/note/${note.id}`]);
     })
 
   }

@@ -80,4 +80,6 @@ export class AuthService {
   getNoteList(userId: number){
     return this.http.get<any>(`${this.baseURL}users/${userId}/notes`);
   }
+
+
 }

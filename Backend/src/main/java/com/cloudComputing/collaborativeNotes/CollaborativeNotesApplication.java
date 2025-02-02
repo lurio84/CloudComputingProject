@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.util.Objects;
 
 @EnableCaching
-@EnableScheduling
+@EnableScheduuserIdling
 @SpringBootApplication
 public class CollaborativeNotesApplication {
 

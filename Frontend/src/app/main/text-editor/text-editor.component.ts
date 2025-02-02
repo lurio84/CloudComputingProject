@@ -3,6 +3,7 @@ import { Editor } from 'ngx-editor';
 import {WebSocketService} from "../../services/web-socket.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NoteService} from "../note.service";
+import {AuthService} from "../../services/auth.service";
 
 
 @Component({
@@ -22,15 +23,19 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   constructor(private webSocketService: WebSocketService,
               private route:ActivatedRoute,
               private noteService: NoteService,
+              private authService: AuthService,
               private router: Router) {
-    this.userId = this.route.snapshot.queryParams['user'];
-    this.noteId = this.route.snapshot.queryParams['noteId'];
+    this.noteId = this.route.snapshot.params['id'];
+    console.log(this.noteId)
+
 
 
   }
 
   ngOnInit(): void {
+    this.userId = Number(this.authService.getUserId());
     this.editor = new Editor();
+    this.assignUser();
 
     // Connect to WebSocket and listen for updates
     this.webSocketService.connect('ws://localhost:8080/ws').subscribe((message: any) => {
@@ -45,6 +50,12 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       this.content = res.content;
 
     })
+  }
+
+  assignUser(){
+    this.noteService.assignUser(this.noteId, this.userId).subscribe(res => {
+      console.log(res)
+    });
   }
 
   /**

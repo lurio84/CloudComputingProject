@@ -48,4 +48,12 @@ export class NoteService {
     return this.http.post<any>(`${this._baseUrl}notes`, '', {params: queryParams});
   }
 
+  shareNote(noteId: number) {
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append('accessLevel', 'EDITOR')
+    return this.http.post<any>(`${this._baseUrl}share/create/${noteId}`, '', {params: queryParams});
+  }
+  assignUser(noteId: number, userId: number){
+    return this.http.post<any>(`${this._baseUrl}notes/${noteId}/assignUser?userId=${userId}` , '');
+  }
 }

@@ -1,0 +1,15 @@
+
+
+<div>
+<h2 mat-dialog-title>Copy Share Link</h2>
+<mat-dialog-content>
+  <mat-form-field style="width: 100%" >
+    <mat-label>Share Link</mat-label>
+    <input matInput [(ngModel)]="data" />
+    <mat-icon class="cursor-pointer" matSuffix [cdkCopyToClipboard]="data">content_copy</mat-icon>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions style="margin-left: auto; padding:15px 20px">
+  <button mat-button  (click)="click()" cdkFocusInitial>Ok</button>
+</mat-dialog-actions>
+</div>

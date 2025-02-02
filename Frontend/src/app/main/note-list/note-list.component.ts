@@ -3,6 +3,8 @@ import {CreateNoteModalComponent} from "../create-note-modal/create-note-modal.c
 import {MatDialog} from "@angular/material/dialog";
 import {Router} from "@angular/router";
 import {AuthService} from "../../services/auth.service";
+import {NoteService} from "../note.service";
+import {ShareDialogComponent} from "../share-dialog/share-dialog.component";
 
 @Component({
   selector: 'app-note-list',
@@ -13,7 +15,10 @@ export class NoteListComponent implements OnInit{
   noteList: any[] = [];
 
   userId!: number;
-  constructor(private dialog: MatDialog, private router: Router, private authService: AuthService) {
+  constructor(private dialog: MatDialog,
+              private router: Router,
+              private noteService: NoteService,
+              private authService: AuthService) {
   }
 
   ngOnInit() {
@@ -39,11 +44,20 @@ export class NoteListComponent implements OnInit{
     });
   }
 
-  share(e: Event) {
+  share(e: Event, note: any) {
     e.stopPropagation();
+    const dialogRef = this.dialog.open(ShareDialogComponent, {
+      width: '400px',
+      data: `http://localhost:4200/note/${note.id}`
+
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(`Dialog result: ${result}`);
+    });
   }
 
   openNote(note: any) {
-    this.router.navigate([`/note/${note.id}`], {queryParams: {user:  this.userId, noteId: note.id}});
+    this.router.navigate([`/note/${note.id}`]);
   }
 }

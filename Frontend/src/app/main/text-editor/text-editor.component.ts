@@ -4,6 +4,7 @@ import {WebSocketService} from "../../services/web-socket.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NoteService} from "../note.service";
 import {AuthService} from "../../services/auth.service";
+import {noop} from "rxjs";
 
 
 @Component({
@@ -26,16 +27,19 @@ export class TextEditorComponent implements OnInit, OnDestroy {
               private authService: AuthService,
               private router: Router) {
     this.noteId = this.route.snapshot.params['id'];
-    console.log(this.noteId)
-
-
 
   }
 
   ngOnInit(): void {
     this.userId = Number(this.authService.getUserId());
     this.editor = new Editor();
-    this.assignUser();
+    this.authService.getNoteList(this.userId).subscribe(res => {
+      const exist = res.some((note: any) => note.id = this.noteId);
+      if(!exist){
+        this.assignUser()
+      }
+    })
+
 
     // Connect to WebSocket and listen for updates
     this.webSocketService.connect('ws://localhost:8080/ws').subscribe((message: any) => {
@@ -53,9 +57,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   }
 
   assignUser(){
-    this.noteService.assignUser(this.noteId, this.userId).subscribe(res => {
-      console.log(res)
-    });
+    this.noteService.assignUser(this.noteId, this.userId).subscribe(noop);
   }
 
   /**

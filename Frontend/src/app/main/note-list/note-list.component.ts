@@ -5,6 +5,7 @@ import {Router} from "@angular/router";
 import {AuthService} from "../../services/auth.service";
 import {NoteService} from "../note.service";
 import {ShareDialogComponent} from "../share-dialog/share-dialog.component";
+import {noop} from "rxjs";
 
 @Component({
   selector: 'app-note-list',
@@ -30,7 +31,6 @@ export class NoteListComponent implements OnInit{
   getNoteInfo(){
     this.authService.getNoteList(this.userId).subscribe((response)=> {
       this.noteList = response;
-      console.log(this.noteList)
     })
   }
   createNote() {
@@ -46,6 +46,7 @@ export class NoteListComponent implements OnInit{
 
   share(e: Event, note: any) {
     e.stopPropagation();
+    this.noteService.shareNote(note?.id).subscribe(noop);
     const dialogRef = this.dialog.open(ShareDialogComponent, {
       width: '400px',
       data: `http://localhost:4200/note/${note.id}`

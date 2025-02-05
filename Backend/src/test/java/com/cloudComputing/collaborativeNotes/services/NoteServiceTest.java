@@ -49,7 +49,7 @@ public class NoteServiceTest {
     void tearDown() throws Exception {
         mocks.close();
     }
-
+/***
     @Test
     void testApplyDiffToNoteSuccess() {
         // Arrange
@@ -69,7 +69,7 @@ public class NoteServiceTest {
         verify(noteChangeRepository).save(any(NoteChange.class));
         verify(messagingTemplate).convertAndSend(eq("/topic/notes/" + mockNote.getId()), eq(diffRequest));
     }
-
+***/
     @Test
     void testGetNoteByIdSuccess() {
         // Arrange

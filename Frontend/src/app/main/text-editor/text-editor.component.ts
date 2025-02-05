@@ -5,6 +5,8 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { NoteService } from "../note.service";
 import { AuthService } from "../../services/auth.service";
 import { noop, Subscription } from "rxjs";
+import { diff_match_patch } from 'diff-match-patch';
+
 
 @Component({
   selector: 'app-text-editor',
@@ -18,7 +20,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   userId!: number;
   noteId!: number;
   private webSocketSubscription!: Subscription;
-
+  private originalContent: string = "";
   noteDetails: any;
 
   constructor(private webSocketService: WebSocketService,
@@ -34,27 +36,29 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.editor = new Editor();
 
     this.authService.getNoteList(this.userId).subscribe(res => {
-      const exist = res.some((note: any) => note.id === this.noteId);  // ✅ Fixed incorrect `=` operator
+      const exist = res.some((note: any) => note.id === this.noteId);
       if (!exist) {
         this.assignUser();
       }
     });
 
-    // ✅ Connect to WebSocket and store the subscription
+    // ✅ Connect to WebSocket and subscribe
     this.webSocketSubscription = this.webSocketService.connect('http://localhost:8080/ws', this.noteId)
       .subscribe((message: any) => {
         console.log("📩 Message received:", message);
-
-        if (message.noteId === this.noteId && message.content !== this.content) {
-          this.content = message.content;
+        if (message.noteId === this.noteId && message.userId !== this.userId) {
+          this.applyReceivedDiff(message.diff);
+        } else {
+          console.log("Skipping diff application for local user.");
         }
       });
 
-    // ✅ Fetch note details correctly
+    // ✅ Fetch initial content
     this.noteService.get(this.noteId);
     this.noteService.getNotesDetail().subscribe((res: any) => {
       this.noteDetails = res;
       this.content = res.content;
+      this.originalContent = res.content; // Store original content for diff comparison
     });
   }
 
@@ -64,28 +68,62 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
   /**
    * Called whenever the content of the editor changes.
+   * Computes the diff and sends it to WebSocket.
    */
   onContentChange(newContent: string): void {
     clearTimeout(this.debounceTimer);
 
     this.debounceTimer = setTimeout(() => {
+      const dmp = new diff_match_patch();
+      const diffs = dmp.diff_main(this.originalContent, newContent);
+      dmp.diff_cleanupSemantic(diffs);
+      const patch = dmp.patch_toText(dmp.patch_make(diffs));
+
       const message = {
         noteId: this.noteId,
         userId: this.userId,
-        content: newContent,
+        diff: patch
       };
-      this.webSocketService.send(message); // ✅ Send the updated content via WebSocket
-    }, 300); // ✅ Debounce time to reduce excessive WebSocket messages
+
+      this.webSocketService.send(message);
+      console.log("Diff sent: ", message);
+
+      this.originalContent = newContent; // ✅ Update original content after sending
+    }, 300); // Debounce time
+  }
+
+  /**
+   * Applies received diffs to the current content.
+   */
+  applyReceivedDiff(diff: string): void {
+    const dmp = new diff_match_patch();
+
+    // Save the current cursor position
+    const textarea = document.getElementById("noteContent") as HTMLTextAreaElement;
+    const cursorPosition = textarea?.selectionStart || 0;
+
+    const patches = dmp.patch_fromText(diff);
+    const [updatedContent, _] = dmp.patch_apply(patches, this.content);
+
+    if (this.content !== updatedContent) {
+      this.content = updatedContent;
+      this.originalContent = updatedContent;
+
+      // ✅ Restore cursor position
+      if (textarea) {
+        textarea.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    }
   }
 
   ngOnDestroy(): void {
     this.editor?.destroy();
 
     if (this.webSocketSubscription) {
-      this.webSocketSubscription.unsubscribe(); // ✅ Unsubscribe from WebSocket
+      this.webSocketSubscription.unsubscribe();
     }
 
-    this.webSocketService.close(); // ✅ Close WebSocket connection
+    this.webSocketService.close();
   }
 
   back() {

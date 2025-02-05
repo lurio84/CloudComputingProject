@@ -25,7 +25,8 @@ export class WebSocketService {
         console.log('✅ WebSocket Connected to:', url);
 
         // ✅ Subscribe to the correct topic for this note
-        const topic = `/topic/notes/${noteId}`;
+        const topic = `/topic/notes/
+        {noteId}`;
         this.stompClient!.subscribe(topic, (message) => {
           const parsedMessage = JSON.parse(message.body);
           observer.next(parsedMessage);

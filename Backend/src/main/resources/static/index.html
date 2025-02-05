@@ -4,18 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collaborative Note Editing</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <!-- SockJS y STOMP.js en el orden correcto -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/google/diff-match-patch/javascript/diff_match_patch.js"></script>
+
+    <!-- Estilos -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <h2>Collaborative Note Editing with Diffs</h2>
+
 <label for="userId">User ID:</label>
 <input type="number" id="userId" value="1" min="1"><br><br>
-<textarea id="noteContent" rows="10" cols="50"></textarea>
+
+<label for="noteContent"></label><textarea id="noteContent" rows="10" cols="50"></textarea>
+
 <div id="messages">
     <h3>Real-time Updates:</h3>
 </div>
+
+<!-- Script principal -->
 <script defer src="script.js"></script>
 </body>
 </html>

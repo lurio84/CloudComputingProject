@@ -3,27 +3,34 @@ let originalContent = "";
 let localUserId = null;
 
 function connect() {
-    const socket = new WebSocket("ws://localhost:8080/ws");
-    stompClient = Stomp.over(socket);
-    stompClient.debug = () => {}; // Disable debug logs
+    const socket = new SockJS("http://localhost:8080/ws"); // Usar SockJS en lugar de WebSocket
 
-    stompClient.connect({}, function (frame) {
-        console.log("Connected: " + frame);
+    stompClient = new StompJs.Client({
+        webSocketFactory: () => socket,
+        reconnectDelay: 5000, // Intentar reconectar en caso de desconexión
+        onConnect: (frame) => {
+            console.log("Connected: " + frame);
 
-        // Subscribe to updates
-        stompClient.subscribe("/topic/notes/1", function (message) {
-            const noteEditMessage = JSON.parse(message.body);
-            console.log("Message received: ", noteEditMessage);
+            // Suscribirse a las actualizaciones en tiempo real
+            stompClient.subscribe("/topic/notes/1", function (message) {
+                const noteEditMessage = JSON.parse(message.body);
+                console.log("Message received: ", noteEditMessage);
 
-            // Apply the received diff if it is not from the local user
-            if (noteEditMessage.userId !== localUserId) {
-                showMessage(noteEditMessage);
-                applyReceivedDiff(noteEditMessage.diff);
-            } else {
-                console.log("Skipping diff application for local user.");
-            }
-        });
+                // Aplicar el diff solo si el mensaje no es del usuario local
+                if (noteEditMessage.userId !== localUserId) {
+                    showMessage(noteEditMessage);
+                    applyReceivedDiff(noteEditMessage.diff);
+                } else {
+                    console.log("Skipping diff application for local user.");
+                }
+            });
+        },
+        onStompError: (frame) => {
+            console.error("STOMP error: ", frame);
+        }
     });
+
+    stompClient.activate(); // Activar el cliente STOMP
 }
 
 function fetchInitialNoteContent(noteId) {
@@ -32,19 +39,24 @@ function fetchInitialNoteContent(noteId) {
         .then(note => {
             document.getElementById("noteContent").value = note.content;
             originalContent = note.content;
-            connect();
+            connect(); // Conectar después de cargar el contenido
         })
         .catch(error => console.error("Error fetching initial note content:", error));
 }
 
 function generateAndSendDiff() {
+    if (!stompClient || !stompClient.connected) {
+        console.error("STOMP client is not connected. Message not sent.");
+        return;
+    }
+
     const textArea = document.getElementById("noteContent");
     const currentContent = textArea.value;
     const userId = parseInt(document.getElementById("userId").value);
 
     localUserId = userId;
 
-    // Capture the current cursor position before generating the diff
+    // Capturar la posición del cursor antes de generar la diff
     const cursorPosition = textArea.selectionStart;
 
     const dmp = new diff_match_patch();
@@ -58,12 +70,16 @@ function generateAndSendDiff() {
         diff: patch
     };
 
-    stompClient.send("/app/edit", {}, JSON.stringify(message));
+    stompClient.publish({
+        destination: "/app/edit",
+        body: JSON.stringify(message)
+    });
+
     console.log("Diff sent: ", message);
 
     originalContent = currentContent;
 
-    // Restore the cursor position after sending the diff
+    // Restaurar la posición del cursor después de enviar el diff
     textArea.setSelectionRange(cursorPosition, cursorPosition);
 }
 
@@ -71,13 +87,13 @@ function applyReceivedDiff(diff) {
     const textArea = document.getElementById("noteContent");
     const dmp = new diff_match_patch();
 
-    // Save the current cursor position
+    // Guardar la posición del cursor
     const cursorPosition = textArea.selectionStart;
 
-    // Get the current content divided by lines
+    // Obtener contenido actual dividido por líneas
     const currentContentLines = textArea.value.split("\n");
 
-    // Identify the line and relative position of the cursor
+    // Identificar la línea y la posición relativa del cursor
     let cursorLine = 0;
     let cursorOffset = cursorPosition;
     for (let i = 0; i < currentContentLines.length; i++) {
@@ -85,19 +101,18 @@ function applyReceivedDiff(diff) {
             cursorLine = i;
             break;
         }
-        cursorOffset -= currentContentLines[i].length + 1; // +1 for the newline character
+        cursorOffset -= currentContentLines[i].length + 1;
     }
 
-    // Apply the diff to the current content
+    // Aplicar la diff al contenido actual
     const patches = dmp.patch_fromText(diff);
     const [updatedContent, results] = dmp.patch_apply(patches, textArea.value);
 
     if (textArea.value !== updatedContent) {
-        // Update the textarea content
         textArea.value = updatedContent;
         originalContent = updatedContent;
 
-        // Calculate the new cursor position
+        // Calcular nueva posición del cursor
         const updatedContentLines = updatedContent.split("\n");
 
         let adjustedCursorPosition = 0;
@@ -105,20 +120,16 @@ function applyReceivedDiff(diff) {
 
         for (let i = 0; i < updatedContentLines.length; i++) {
             if (i < cursorLine) {
-                // Before the current line, add full lengths
                 adjustedCursorPosition += updatedContentLines[i].length + 1;
             } else if (i === cursorLine) {
-                // On the same line, adjust according to the change in that line
                 const originalLineLength = currentContentLines[i]?.length || 0;
                 const updatedLineLength = updatedContentLines[i]?.length || 0;
 
                 const changeInLine = updatedLineLength - originalLineLength;
 
                 if (cursorOffset <= originalLineLength) {
-                    // If the change is before the cursor, adjust proportionally
                     adjustedCursorPosition += cursorOffset + Math.max(0, changeInLine);
                 } else {
-                    // If the change is after the cursor in the same line, do not move the cursor
                     adjustedCursorPosition += cursorOffset;
                 }
                 hasCursorMoved = true;
@@ -126,14 +137,13 @@ function applyReceivedDiff(diff) {
             }
         }
 
-        // If the cursor has not moved, add the rest of the content
         if (!hasCursorMoved) {
             for (let i = cursorLine + 1; i < updatedContentLines.length; i++) {
                 adjustedCursorPosition += updatedContentLines[i].length + 1;
             }
         }
 
-        // Restore the cursor to the new adjusted position
+        // Restaurar la posición del cursor
         textArea.setSelectionRange(adjustedCursorPosition, adjustedCursorPosition);
     }
 }
@@ -149,7 +159,8 @@ function showMessage(message) {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// Send the diff on every character change
+// Enviar diff en cada cambio
 document.getElementById("noteContent").addEventListener("input", generateAndSendDiff);
 
+// Cargar contenido inicial y conectar
 window.onload = () => fetchInitialNoteContent(1);

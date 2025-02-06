@@ -2,8 +2,11 @@ let stompClient = null;
 let originalContent = "";
 let localUserId = null;
 
+// Obtener la URL base automáticamente
+const backendUrl = window.location.origin;
+
 function connect() {
-    const socket = new SockJS("http://localhost:8080/ws"); // Usar SockJS en lugar de WebSocket
+    const socket = new SockJS(`${backendUrl}/ws`); // Usar SockJS en lugar de WebSocket
 
     stompClient = new StompJs.Client({
         webSocketFactory: () => socket,
@@ -34,7 +37,7 @@ function connect() {
 }
 
 function fetchInitialNoteContent(noteId) {
-    fetch(`http://localhost:8080/notes/${noteId}`)
+    fetch(`${backendUrl}/notes/${noteId}`)
         .then(response => response.json())
         .then(note => {
             document.getElementById("noteContent").value = note.content;
@@ -112,39 +115,8 @@ function applyReceivedDiff(diff) {
         textArea.value = updatedContent;
         originalContent = updatedContent;
 
-        // Calcular nueva posición del cursor
-        const updatedContentLines = updatedContent.split("\n");
-
-        let adjustedCursorPosition = 0;
-        let hasCursorMoved = false;
-
-        for (let i = 0; i < updatedContentLines.length; i++) {
-            if (i < cursorLine) {
-                adjustedCursorPosition += updatedContentLines[i].length + 1;
-            } else if (i === cursorLine) {
-                const originalLineLength = currentContentLines[i]?.length || 0;
-                const updatedLineLength = updatedContentLines[i]?.length || 0;
-
-                const changeInLine = updatedLineLength - originalLineLength;
-
-                if (cursorOffset <= originalLineLength) {
-                    adjustedCursorPosition += cursorOffset + Math.max(0, changeInLine);
-                } else {
-                    adjustedCursorPosition += cursorOffset;
-                }
-                hasCursorMoved = true;
-                break;
-            }
-        }
-
-        if (!hasCursorMoved) {
-            for (let i = cursorLine + 1; i < updatedContentLines.length; i++) {
-                adjustedCursorPosition += updatedContentLines[i].length + 1;
-            }
-        }
-
         // Restaurar la posición del cursor
-        textArea.setSelectionRange(adjustedCursorPosition, adjustedCursorPosition);
+        textArea.setSelectionRange(cursorPosition, cursorPosition);
     }
 }
 

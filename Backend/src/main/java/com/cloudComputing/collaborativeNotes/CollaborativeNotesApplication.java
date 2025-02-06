@@ -24,6 +24,9 @@ public class CollaborativeNotesApplication {
 		System.setProperty("DATABASE_URL", Objects.requireNonNull(dotenv.get("DATABASE_URL")));
 		System.setProperty("DATABASE_USERNAME", Objects.requireNonNull(dotenv.get("DATABASE_USERNAME")));
 		System.setProperty("DATABASE_PASSWORD", Objects.requireNonNull(dotenv.get("DATABASE_PASSWORD")));
+		System.setProperty("REDIS_HOST", Objects.requireNonNull(dotenv.get("REDIS_HOST")));
+		System.setProperty("REDIS_PORT", Objects.requireNonNull(dotenv.get("REDIS_PORT")));
+		System.setProperty("REDIS_USE_TLS", Objects.requireNonNull(dotenv.get("REDIS_USE_TLS")));
 
 		SpringApplication.run(CollaborativeNotesApplication.class, args);
 	}

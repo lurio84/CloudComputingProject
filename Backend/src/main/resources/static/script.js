@@ -3,7 +3,7 @@ let originalContent = "";
 let localUserId = null;
 
 function connect() {
-    const socket = new SockJS("http://13.61.33.161:8080/ws"); // Usar SockJS en lugar de WebSocket
+    const socket = new SockJS("http://localhost:8080/ws"); // Usar SockJS en lugar de WebSocket
 
     stompClient = new StompJs.Client({
         webSocketFactory: () => socket,
@@ -34,7 +34,7 @@ function connect() {
 }
 
 function fetchInitialNoteContent(noteId) {
-    fetch(`http://13.61.33.161:8080/notes/${noteId}`)
+    fetch(`http://localhost:8080/notes/${noteId}`)
         .then(response => response.json())
         .then(note => {
             document.getElementById("noteContent").value = note.content;

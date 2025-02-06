@@ -15,7 +15,12 @@ public class CollaborativeNotesApplication {
 
 	public static void main(String[] args) {
 		// Load the .env file and set the environment variables
-		Dotenv dotenv = Dotenv.load();
+		Dotenv dotenv;
+		try {
+			dotenv = Dotenv.configure().directory("../").load(); // Para ejecución con mvn spring-boot:run
+		} catch (Exception e) {
+			dotenv = Dotenv.configure().directory("./").load(); // Para ejecución con el botón del IDE
+		}
 		System.setProperty("DATABASE_URL", Objects.requireNonNull(dotenv.get("DATABASE_URL")));
 		System.setProperty("DATABASE_USERNAME", Objects.requireNonNull(dotenv.get("DATABASE_USERNAME")));
 		System.setProperty("DATABASE_PASSWORD", Objects.requireNonNull(dotenv.get("DATABASE_PASSWORD")));

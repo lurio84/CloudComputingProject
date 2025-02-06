@@ -16,14 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -60,24 +59,23 @@ public class NoteService {
         Note note = getNoteById(diffRequest.getNoteId());
         User user = getUserById(diffRequest.getUserId());
 
-        // Accumulate the diff in Redis for both content update and persistence
         String cacheKey = DIFF_CACHE_KEY_PREFIX + note.getId();
         String diffListKey = DIFF_LIST_KEY_PREFIX + note.getId();
 
         redisTemplate.opsForList().rightPush(cacheKey, diffRequest.getDiff());
         redisTemplate.opsForList().rightPush(diffListKey, diffRequest);
-        redisTemplate.expire(cacheKey, 30, TimeUnit.MINUTES); // TTL of 30 minutes for diffs
-        redisTemplate.expire(diffListKey, 30, TimeUnit.MINUTES); // TTL of 30 minutes for diffs
+        redisTemplate.expire(cacheKey, 30, TimeUnit.MINUTES);
+        redisTemplate.expire(diffListKey, 30, TimeUnit.MINUTES);
 
-        // Notify other clients
         messagingTemplate.convertAndSend("/topic/notes/" + note.getId(), diffRequest);
         logger.info("Diff cached and sent to clients for noteId: {}", note.getId());
     }
 
     @Scheduled(fixedRate = 20000) // Every 20 seconds
     public void processAndSaveCachedDiffs() {
-        // Retrieve all cache keys corresponding to notes
-        Set<String> keys = redisTemplate.keys(DIFF_CACHE_KEY_PREFIX + "*");
+        // ✅ Usamos SCAN en lugar de KEYS para evitar restricciones en AWS ElastiCache
+        Set<String> keys = scanKeys(DIFF_CACHE_KEY_PREFIX + "*");
+
         if (keys.isEmpty()) {
             return;
         }
@@ -86,7 +84,6 @@ public class NoteService {
             Long noteId = extractNoteIdFromCacheKey(cacheKey);
             String diffListKey = DIFF_LIST_KEY_PREFIX + noteId;
 
-            // Process accumulated diffs
             LinkedList<Object> cachedDiffs = new LinkedList<>(Objects.requireNonNull(redisTemplate.opsForList().range(cacheKey, 0, -1)));
             LinkedList<Object> cachedDiffRequests = new LinkedList<>(Objects.requireNonNull(redisTemplate.opsForList().range(diffListKey, 0, -1)));
 
@@ -97,31 +94,39 @@ public class NoteService {
             Note note = getNoteById(noteId);
             String updatedContent = note.getContent();
 
-            // Consolidate all diffs into a single diff string
             StringBuilder consolidatedDiff = new StringBuilder();
             for (Object cachedDiff : cachedDiffs) {
                 updatedContent = applyDiffToContent((String) cachedDiff, updatedContent);
                 consolidatedDiff.append(cachedDiff).append("\n");
             }
 
-            // Determine the aggregated change type
             NoteChange.ChangeType aggregatedChangeType = determineAggregatedChangeType(consolidatedDiff.toString());
 
-            // Save the note content to the database
             note.setContent(updatedContent);
             note.setUpdatedAt(LocalDateTime.now());
             noteRepository.save(note);
 
-            // Save the consolidated diff as a single record in the database
             DiffRequest firstDiffRequest = (DiffRequest) cachedDiffRequests.getFirst();
             User user = getUserById(firstDiffRequest.getUserId());
             saveNoteChange(note, user, consolidatedDiff.toString(), aggregatedChangeType);
 
-            // Clear the cache after saving
             redisTemplate.delete(cacheKey);
             redisTemplate.delete(diffListKey);
             logger.info("Saved and cleared cached diffs for noteId: {}", noteId);
         }
+    }
+
+    private Set<String> scanKeys(String pattern) {
+        Set<String> keys = new HashSet<>();
+        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(100).build();
+        try (var cursor = redisTemplate.getConnectionFactory().getConnection().scan(options)) {
+            while (cursor.hasNext()) {
+                keys.add(new String(cursor.next()));
+            }
+        } catch (Exception e) {
+            logger.error("Error scanning Redis keys: {}", e.getMessage());
+        }
+        return keys;
     }
 
     private Long extractNoteIdFromCacheKey(String cacheKey) {

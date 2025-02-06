@@ -32,7 +32,10 @@ public class RedisConfig {
                 LettuceClientConfiguration.builder();
 
         if (useTls) {
-            clientConfigBuilder.useSsl(); // Se activa SSL/TLS si es necesario
+            clientConfigBuilder.useSsl();
+            System.out.println("✅ Redis usando TLS");
+        } else {
+            System.out.println("🚨 Redis SIN TLS");
         }
 
         LettuceClientConfiguration clientConfig = clientConfigBuilder.build();
@@ -44,7 +47,6 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Configurar los serializadores para evitar problemas de conversión de datos
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());

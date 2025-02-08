@@ -27,8 +27,15 @@ public class NoteController {
 
     @GetMapping("/{noteId}")
     public ResponseEntity<Note> getNoteContent(@PathVariable Long noteId) {
-        Note note = noteService.getNoteById(noteId);
-        return ResponseEntity.ok(note);
+        try {
+            Note updatedNote = noteService.getNoteWithCachedDiffs(noteId);
+            if (updatedNote == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(updatedNote);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @PostMapping("/{noteId}/version")

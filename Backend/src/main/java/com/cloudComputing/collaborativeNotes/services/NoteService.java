@@ -71,6 +71,45 @@ public class NoteService {
         logger.info("Diff cached and sent to clients for noteId: {}", note.getId());
     }
 
+    public Note getNoteWithCachedDiffs(Long noteId) {
+        // Obtener la nota desde la base de datos
+        Note note = getNoteById(noteId);
+        String content = note.getContent();
+
+        logger.info("Contenido base de la nota con ID {}: {}", noteId, content);
+
+        if (content == null || content.isEmpty()) {
+            logger.warn("El contenido base de la nota está vacío o es nulo.");
+            return note; // Retornar la nota tal cual si está vacía
+        }
+
+        // Obtener los diffs acumulados de Redis
+        String cacheKey = DIFF_CACHE_KEY_PREFIX + noteId;
+        List<Object> cachedDiffs = redisTemplate.opsForList().range(cacheKey, 0, -1);
+
+        if (cachedDiffs == null || cachedDiffs.isEmpty()) {
+            logger.info("No se encontraron diffs en caché para la nota con ID {}", noteId);
+            return note; // Si no hay diffs, retornar la nota original
+        }
+
+        // Aplicar los diffs al contenido base
+        for (Object diff : cachedDiffs) {
+            content = applyDiffToContent((String) diff, content);
+            logger.info("Contenido actualizado tras aplicar diff: {}", content);
+        }
+
+        // Crear una copia de la nota con el contenido actualizado
+        Note updatedNote = new Note();
+        updatedNote.setId(note.getId());
+        updatedNote.setTitle(note.getTitle());
+        updatedNote.setContent(content); // Aquí ponemos el contenido con los diffs aplicados
+        updatedNote.setCreatedAt(note.getCreatedAt());
+        updatedNote.setUpdatedAt(LocalDateTime.now());
+
+        return updatedNote; // Devolver la nota con el contenido actualizado
+    }
+
+
     @Scheduled(fixedRate = 20000) // Every 20 seconds
     public void processAndSaveCachedDiffs() {
         // ✅ Usamos SCAN en lugar de KEYS para evitar restricciones en AWS ElastiCache

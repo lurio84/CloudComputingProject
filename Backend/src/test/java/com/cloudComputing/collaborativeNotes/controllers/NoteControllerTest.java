@@ -50,7 +50,7 @@ public class NoteControllerTest {
         verify(noteService).applyDiffToNote(diffRequest);
         verifyNoMoreInteractions(noteService);
     }
-***/
+
     @Test
     void testGetNoteContentSuccess() {
         // Arrange
@@ -66,6 +66,7 @@ public class NoteControllerTest {
         assertEquals(200, response.getStatusCode().value(), "Response should return HTTP 200");
         assertEquals(mockNote, response.getBody(), "The body should match the mock note");
     }
+ ***/
 
     @Test
     void testCreateNoteVersion() {

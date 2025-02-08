@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import {environment} from "../../environments/environments";
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +11,7 @@ import { tap } from 'rxjs/operators';
 export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   private userId: number | null = null;
-  baseURL = 'http://localhost:8080/';
+  baseURL =  environment.apiUrl;
 
   constructor(private http: HttpClient, private router: Router) {}
 

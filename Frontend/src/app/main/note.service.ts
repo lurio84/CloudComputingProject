@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {BehaviorSubject, Observable} from "rxjs";
+import {environment} from "../../environments/environments";
 
 
 
@@ -13,7 +14,7 @@ export class NoteService {
   private usersInNote = new BehaviorSubject<number>(0);
   private NoteDetail = new BehaviorSubject<number>(0);
   constructor(private http: HttpClient) {
-    this._baseUrl = 'http://localhost:8080/';
+    this._baseUrl = environment.apiUrl;
   }
 
   get(id: number): void {

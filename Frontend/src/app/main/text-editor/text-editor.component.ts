@@ -6,6 +6,7 @@ import { NoteService } from "../note.service";
 import { AuthService } from "../../services/auth.service";
 import { noop, Subscription } from "rxjs";
 import { diff_match_patch } from 'diff-match-patch';
+import {environment} from "../../../environments/environments";
 
 
 @Component({
@@ -24,6 +25,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   noteDetails: any;
 
   isTyping = false;
+
+  webSocketUrl = environment.websocketUrl
 
   constructor(private webSocketService: WebSocketService,
               private route: ActivatedRoute,
@@ -45,14 +48,9 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     });
 
     // ✅ Connect to WebSocket and subscribe
-    this.webSocketSubscription = this.webSocketService.connect('http://localhost:8080/ws', this.noteId)
+    this.webSocketSubscription = this.webSocketService.connect(this.webSocketUrl, this.noteId)
       .subscribe((message: any) => {
-        console.log("📩 Message received:", message);
-        // this.applyReceivedDiff(message.diff);
-        console.log('noteId',this.noteId, message.noteId)
-        console.log('user', message.userId, this.userId)
         if (message.noteId == this.noteId && message.userId != this.userId) {
-
           this.applyReceivedDiff(message.diff);
         } else {
           console.log("Skipping diff application for local user.");
@@ -62,6 +60,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     // ✅ Fetch initial content
     this.noteService.get(this.noteId);
     this.noteService.getNotesDetail().subscribe((res: any) => {
+      console.log('scmkdms',res)
       this.noteDetails = res;
       this.content = res.content;
       this.originalContent = res.content; // Store original content for diff comparison
@@ -94,8 +93,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       };
 
       this.webSocketService.send(message);
-      console.log("Diff sent: ", message);
-
       this.originalContent = newContent; // ✅ Update original content after sending
     }, 1); // Debounce time
   }

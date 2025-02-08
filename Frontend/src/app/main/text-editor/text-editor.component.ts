@@ -46,7 +46,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.webSocketSubscription = this.webSocketService.connect('http://localhost:8080/ws', this.noteId)
       .subscribe((message: any) => {
         console.log("📩 Message received:", message);
-        if (message.noteId === this.noteId && message.userId !== this.userId) {
+        // this.applyReceivedDiff(message.diff);
+        console.log('noteId',this.noteId, message.noteId)
+        console.log('user', message.userId, this.userId)
+        if (message.noteId == this.noteId && message.userId != this.userId) {
+
           this.applyReceivedDiff(message.diff);
         } else {
           console.log("Skipping diff application for local user.");
@@ -73,7 +77,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   onContentChange(newContent: string): void {
     clearTimeout(this.debounceTimer);
 
-    this.debounceTimer = setTimeout(() => {
+    // this.debounceTimer = setTimeout(() => {
       const dmp = new diff_match_patch();
       const diffs = dmp.diff_main(this.originalContent, newContent);
       dmp.diff_cleanupSemantic(diffs);
@@ -89,7 +93,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       console.log("Diff sent: ", message);
 
       this.originalContent = newContent; // ✅ Update original content after sending
-    }, 300); // Debounce time
+    // }, 300); // Debounce time
   }
 
   /**

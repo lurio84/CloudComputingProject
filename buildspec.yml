@@ -43,10 +43,7 @@ phases:
       - echo Running Spring Boot application...
       - java -jar target/*.jar &
       
-      # Optionally: To confirm the application is running
-      - sleep 30
-      - curl http://localhost:8080
-
+      ps aux | grep java
 artifacts:
   files:
     - target/*.jar

@@ -46,6 +46,7 @@ phases:
       - ls -lah target/ 
       - pwd
 artifacts:
+  base-directory: target
   files:
     - "target/*.jar"
   discard-paths: no

@@ -40,6 +40,8 @@ phases:
       - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest
       - echo "Writing image definitions..."
       - echo '[{"name":"your-container-name","imageUri":"'$IMAGE_URI'"}]' > ../imagedefinitions.json  # ルートに作成
+      - ls -l imagedefinitions.json
+      - cat imagedefinitions.json
 
   post_build:
     commands:

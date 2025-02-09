@@ -24,6 +24,7 @@ phases:
       # Clone the GitHub repository
       - echo Cloning repository...
       - git clone https://github.com/lurio84/CloudComputingProject.git
+      - ls -a
       - cd CloudComputingProject
 
       # Create .env file from example

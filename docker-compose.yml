@@ -3,15 +3,13 @@ version: "3.8"
 services:
   backend:
     build:
-      context: ./Backend
-      dockerfile: Dockerfile
-    env_file:
-      - ./Backend/.env
+      context: .  # ⬅️ Usamos la raíz del proyecto
+      dockerfile: Backend/Dockerfile
     ports:
       - "8080:8080"
-    depends_on:
-      - database
-
+    env_file:
+      - ./.env  # ⬅️ También pasamos el archivo como variable de entorno
+  
   frontend:
     build:
       context: ./Frontend
@@ -20,16 +18,3 @@ services:
       - "80:80"
     depends_on:
       - backend
-
-  database:
-    image: postgres:15
-    restart: always
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
-volumes:
-  db_data:

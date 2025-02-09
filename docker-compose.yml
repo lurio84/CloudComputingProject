@@ -1,15 +1,13 @@
-version: "3.8"
-
 services:
   backend:
     build:
-      context: .  # ⬅️ Usamos la raíz del proyecto
+      context: . # ⬅️ Usamos la raíz del proyecto
       dockerfile: Backend/Dockerfile
     ports:
       - "8080:8080"
     env_file:
-      - ./.env  # ⬅️ También pasamos el archivo como variable de entorno
-  
+      - ./.env # ⬅️ También pasamos el archivo como variable de entorno
+
   frontend:
     build:
       context: ./Frontend

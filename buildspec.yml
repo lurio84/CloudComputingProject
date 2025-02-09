@@ -1,56 +1,52 @@
 version: 0.2
 
-# 必要な依存関係のキャッシュ
-cache:
-  paths:
-    - '/root/.m2/**/*'  # Maven の依存関係キャッシュ
-    - '/root/.npm/**/*'  # Node.js の依存関係キャッシュ
-
 phases:
-  # installフェーズ: 必要なツールをインストールする
   install:
     runtime-versions:
-      java: openjdk17
       nodejs: 18
     commands:
-      - echo Installing required tools...
+      # Install OpenJDK 17
+      - echo Installing OpenJDK 17...
       - sudo apt-get update -y
-      - sudo apt-get install -y mariadb-client git
+      - sudo apt-get install -y openjdk-17-jdk
+      - java -version
 
-  # pre_buildフェーズ: ソースコードをクローンし、環境設定を行う
+      # Install MariaDB client (if not set up yet)
+      - echo Installing MariaDB client...
+      - sudo apt-get install -y mariadb-client
+
+      # Install Git
+      - echo Installing Git...
+      - sudo apt-get install -y git
+
   pre_build:
     commands:
-      - echo Cloning the repository...
+      # Clone the GitHub repository
+      - echo Cloning repository...
       - git clone https://github.com/lurio84/CloudComputingProject.git
       - cd CloudComputingProject
-      - echo Setting up .env file...
-      - cp .env.example .env
-      # MariaDB の設定や接続、データベース作成を実行（必要に応じて調整）
-      - echo "Connecting to MariaDB and creating database..."
-      - mariadb -h [your-database-endpoint] -u admin -p$password -e "CREATE DATABASE IF NOT EXISTS collaborative_notes;"
 
-  # buildフェーズ: Spring Boot アプリケーションのビルド
+      # Create .env file from example
+      - cp .env.example .env
+
   build:
     commands:
+      # Run Maven build (skip tests)
       - echo Building Spring Boot application...
       - ./mvnw clean package -DskipTests
-      - echo Running Spring Boot application...
-      - java -jar target/*.jar
 
-  # post_buildフェーズ: デプロイ用の成果物を準備
   post_build:
     commands:
-      - echo Build complete. Preparing for deployment...
-      # 必要に応じて、ここでデプロイ用の成果物（JARなど）を別の場所に保存
-      - ls -l target  # ビルドしたファイルを確認
+      # Running the backend Spring Boot application
+      - echo Running Spring Boot application...
+      - java -jar target/*.jar &
+      
+      # Optionally: To confirm the application is running
+      - sleep 10
+      - curl http://localhost:8080
 
 artifacts:
   files:
-    - target/*.jar  # Spring Boot の JAR ファイル
+    - target/*.jar
+  discard-paths: yes
 
-# Build が成功した場合の通知設定（オプション）
-notifications:
-  success:
-    - arn:aws:sns:region:account-id:topic-name
-  failure:
-    - arn:aws:sns:region:account-id:topic-name

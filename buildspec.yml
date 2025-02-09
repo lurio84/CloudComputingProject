@@ -45,11 +45,12 @@ phases:
       - ps aux | grep java
       - ls -lah target/ 
       - pwd
+
 artifacts:
-  base-directory: target
   files:
-    - "target/*.jar"
+    - "**/target/*.jar"  # どこに `target/` があるかわからない場合の対応
   discard-paths: no
+
 
 
 

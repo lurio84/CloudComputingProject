@@ -36,6 +36,10 @@ phases:
       - echo Building Spring Boot application...
       - chmod +x mvnw
       - ./mvnw clean package -DskipTests
+      - echo "Building the Docker image..."
+      - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest
+      - echo "Writing image definitions..."
+      - echo '[{"name":"your-container-name","imageUri":"'$IMAGE_URI'"}]' > ../imagedefinitions.json  # ルートに作成
 
   post_build:
     commands:
@@ -49,6 +53,7 @@ phases:
 artifacts:
   files:
     - "**/target/*.jar"  # どこに `target/` があるかわからない場合の対応
+    - imagedefinitions.json
   discard-paths: no
 
 

@@ -42,10 +42,15 @@ phases:
       # Running the backend Spring Boot application
       - echo Running Spring Boot application...
       - java -jar target/*.jar &
-      
       - ps aux | grep java
+      - ls -lah target/ 
+      - pwd
+
 artifacts:
   files:
-    - target/*.jar
-  discard-paths: yes
+    - "**/target/*.jar"  # どこに `target/` があるかわからない場合の対応
+  discard-paths: no
+
+
+
 

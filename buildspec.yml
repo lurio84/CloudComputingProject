@@ -45,7 +45,9 @@ phases:
       - ps aux | grep java
       - ls -lah target/ 
 artifacts:
+  base-directory: target
   files:
-    - target/*.jar
-  discard-paths: yes
+    - "*.jar"
+  discard-paths: no
+
 

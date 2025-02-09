@@ -25,15 +25,13 @@ phases:
       - echo Cloning repository...
       - git clone https://github.com/lurio84/CloudComputingProject.git
       - ls -a
-      - cd Backend
-
       # Create .env file from example
       - cp .env.example .env
 
   build:
     commands:
       # Run Maven build (skip tests)
-      - cd CloudComputingProject
+      - cd Backend
       - echo Building Spring Boot application...
       - ./mvnw clean package -DskipTests
 

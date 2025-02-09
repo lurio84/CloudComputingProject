@@ -42,8 +42,8 @@ phases:
       # Running the backend Spring Boot application
       - echo Running Spring Boot application...
       - java -jar target/*.jar &
-      
       - ps aux | grep java
+      - ls -lah target/ 
 artifacts:
   files:
     - target/*.jar

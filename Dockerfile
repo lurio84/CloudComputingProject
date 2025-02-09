@@ -1,53 +1,53 @@
-# Etapa 1: Construcción del Backend (Spring Boot con Maven)
+# Stage 1: Backend Build (Spring Boot with Maven)
 FROM maven:3.8.7-eclipse-temurin-17 AS backend-build
 WORKDIR /backend
 
-# Copiar archivos necesarios y descargar dependencias
+# Copy necessary files and download dependencies
 COPY Backend/pom.xml .
 RUN mvn dependency:go-offline
 
-# Copiar el código fuente y compilar la aplicación
+# Copy source code and compile the application
 COPY Backend/src ./src
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Construcción del Frontend (Angular)
+# Stage 2: Frontend Build (Angular)
 FROM node:18-alpine AS frontend-build
 WORKDIR /frontend
 
-# Copiar archivos esenciales y descargar dependencias
+# Copy essential files and install dependencies
 COPY Frontend/package.json Frontend/package-lock.json ./
 RUN npm install
 
-# Copiar archivos de configuración
+# Copy configuration files
 COPY Frontend/angular.json Frontend/tsconfig.json Frontend/tsconfig.app.json ./
 
-# Copiar el resto del código fuente
+# Copy the rest of the source code
 COPY Frontend/ ./
 
-# Construir la aplicación Angular
+# Build the Angular application
 RUN npm run build
 
-# Etapa 3: Imagen final con JRE y Nginx
+# Stage 3: Final Image with JRE and Nginx
 FROM eclipse-temurin:17-jre AS final
 WORKDIR /app
 
-# Copiar el JAR compilado del backend
+# Copy the compiled backend JAR
 COPY --from=backend-build /backend/target/*.jar backend.jar
 
-# Copiar los archivos compilados del frontend
+# Copy the compiled frontend files
 COPY --from=frontend-build /frontend/dist/cnotes /usr/share/nginx/html
 
-# Instalar Nginx
+# Install Nginx
 RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
 
-# Copiar configuración personalizada de Nginx desde la carpeta Frontend
+# Copy custom Nginx configuration from the Frontend folder
 COPY Frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copiar el archivo .env desde la raíz del proyecto
+# Copy the .env file from the root of the project
 COPY .env /app/.env
 
-# Exponer los puertos
+# Expose ports
 EXPOSE 80 8080
 
-# Comando para ejecutar el backend y nginx en segundo plano
+# Command to run the backend and Nginx in the background
 CMD ["sh", "-c", "java -jar /app/backend.jar & nginx -g 'daemon off;'"]

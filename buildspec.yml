@@ -44,7 +44,7 @@ phases:
       - java -jar target/*.jar &
       
       # Optionally: To confirm the application is running
-      - sleep 10
+      - sleep 30
       - curl http://localhost:8080
 
 artifacts:

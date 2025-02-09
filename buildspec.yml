@@ -44,10 +44,11 @@ phases:
       - java -jar target/*.jar &
       - ps aux | grep java
       - ls -lah target/ 
+      - pwd
 artifacts:
-  base-directory: target
   files:
-    - "*.jar"
+    - "target/*.jar"
   discard-paths: no
+
 
 

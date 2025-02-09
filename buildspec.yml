@@ -43,7 +43,7 @@ phases:
       - echo Running Spring Boot application...
       - java -jar target/*.jar &
       
-      ps aux | grep java
+      - ps aux | grep java
 artifacts:
   files:
     - target/*.jar

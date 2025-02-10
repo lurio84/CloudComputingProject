@@ -57,7 +57,6 @@ phases:
       - echo Running Spring Boot application...
       - java -jar target/*.jar &
       - ps aux | grep java
-      - ls -lah target/ 
       - pwd
 
 artifacts:

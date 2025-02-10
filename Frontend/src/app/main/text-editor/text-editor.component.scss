@@ -15,3 +15,17 @@ height: 80vh;
 margin:20px 40px;
 
 }
+
+.example-form {
+  min-width: 150px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.example-full-width {
+  width: 100%;
+  min-height: 75vh;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+}

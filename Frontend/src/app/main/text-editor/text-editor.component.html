@@ -6,12 +6,18 @@
 
 </div>
 <div class="NgxEditor__Wrapper">
-  <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
-  <ngx-editor
-    [editor]="editor"
-    [(ngModel)]="content"
-    [disabled]="false"
-    [placeholder]="'Type here...'"
-    (ngModelChange)="onContentChange($event)">
-  </ngx-editor>
+
+  <mat-form-field class="example-full-width">
+
+    <textarea matInput placeholder="Start to write..." [(ngModel)]="content" (ngModelChange)="onContentChange($event)"></textarea>
+  </mat-form-field>
+
+<!--  <ngx-editor-menu [editor]="editor"></ngx-editor-menu>-->
+<!--  <ngx-editor-->
+<!--    [editor]="editor"-->
+<!--    [(ngModel)]="content"-->
+<!--    [disabled]="false"-->
+<!--    [placeholder]="'Type here...'"-->
+<!--    (ngModelChange)="onContentChange($event)">-->
+<!--  </ngx-editor>-->
 </div>

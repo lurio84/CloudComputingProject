@@ -25,14 +25,14 @@ phases:
       - echo Cloning repository...
       - git clone https://github.com/lurio84/CloudComputingProject.git
       - ls -a
-      # Create .env file from example (it was not used. I configured in environmental variables of code build)
+      # Create .env file from example (it was not used. I configured in environment variables of CodeBuild)
       - cp .env.example .env
       - echo "DATABASE_URL=$DATABASE_URL" >> .env
-    　- echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
-    　- echo "DATABASE_PASSWORD=$DATABASE_PASSWORD" >> .env
-    　- echo "REDIS_HOST=$REDIS_HOST" >> .env
-    　- echo "REDIS_PORT=$REDIS_PORT" >> .env
-    　- echo "REDIS_USE_TLS=$REDIS_USE_TLS" >> .env
+      - echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
+      - echo "DATABASE_PASSWORD=$DATABASE_PASSWORD" >> .env
+      - echo "REDIS_HOST=$REDIS_HOST" >> .env
+      - echo "REDIS_PORT=$REDIS_PORT" >> .env
+      - echo "REDIS_USE_TLS=$REDIS_USE_TLS" >> .env
 
   build:
     commands:
@@ -43,7 +43,7 @@ phases:
       - ./mvnw clean package -DskipTests
       - cd ..
 
-      # Docker イメージをビルド & プッシュ
+      # Build and push the Docker image
       - echo "Building the Docker image..."
       - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:$CODEBUILD_RESOLVED_SOURCE_VERSION
       - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 211125652233.dkr.ecr.eu-north-1.amazonaws.com
@@ -51,9 +51,9 @@ phases:
       - docker tag collaborativenotesrepository:latest $IMAGE_URI
       - docker push $IMAGE_URI
 
-      # image definitions を作成
+      # Create image definitions
       - echo "Writing image definitions..."
-      - echo '[{"name":"collaborativenotesrepository","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json  # ルートに作成
+      - echo '[{"name":"collaborativenotesrepository","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json  # Created in root
       - ls -l imagedefinitions.json
       - cat imagedefinitions.json
 
@@ -67,10 +67,6 @@ phases:
 
 artifacts:
   files:
-    - "**/target/*.jar"  # どこに `target/` があるかわからない場合の対応
+    - "**/target/*.jar"  # In case the location of `target/` is unknown
     - imagedefinitions.json
   discard-paths: no
-
-
-
-

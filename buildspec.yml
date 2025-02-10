@@ -30,16 +30,23 @@ phases:
 
   build:
     commands:
-      # Run Maven build (skip tests)
       - cd Backend
       - ls -a
-      - echo Building Spring Boot application...
+      - echo "Building Spring Boot application..."
       - chmod +x mvnw
       - ./mvnw clean package -DskipTests
+
+      # Docker イメージをビルド & プッシュ
       - echo "Building the Docker image..."
-      - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest
+      - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 211125652233.dkr.ecr.eu-north-1.amazonaws.com
+      - docker build -t collaborativenotesrepository .
+      - docker tag collaborativenotesrepository:latest $IMAGE_URI
+      - docker push $IMAGE_URI
+
+      # image definitions を作成
       - echo "Writing image definitions..."
-      - echo '[{"name":"your-container-name","imageUri":"'$IMAGE_URI'"}]' > ../imagedefinitions.json  # ルートに作成
+      - echo '[{"name":"collaborativenotes","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json  # ルートに作成
       - ls -l imagedefinitions.json
       - cat imagedefinitions.json
 

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, HostListener, OnInit} from '@angular/core';
 import {CreateNoteModalComponent} from "../create-note-modal/create-note-modal.component";
 import {MatDialog} from "@angular/material/dialog";
 import {Router} from "@angular/router";
@@ -14,7 +14,7 @@ import {noop} from "rxjs";
 })
 export class NoteListComponent implements OnInit{
   noteList: any[] = [];
-
+  gridCols: number = 4;
   userId!: number;
   constructor(private dialog: MatDialog,
               private router: Router,
@@ -25,7 +25,27 @@ export class NoteListComponent implements OnInit{
   ngOnInit() {
     this.userId = this.authService.getUserId()!;
     this.getNoteInfo();
+    this.updateGridCols();
   }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.updateGridCols();
+  }
+
+  updateGridCols() {
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 600) {
+      this.gridCols = 1;  // Mobile view (1 column)
+    } else if (screenWidth < 960) {
+      this.gridCols = 2;  // Tablet view (2 columns)
+    } else if (screenWidth < 1280) {
+      this.gridCols = 3;  // Small desktop (3 columns)
+    } else {
+      this.gridCols = 4;  // Large screens (4 columns)
+    }
+  }
+
 
 
   getNoteInfo(){
@@ -49,7 +69,7 @@ export class NoteListComponent implements OnInit{
     this.noteService.shareNote(note?.id).subscribe(noop);
     const dialogRef = this.dialog.open(ShareDialogComponent, {
       width: '400px',
-      data: `http://localhost:4200/note/${note.id}`
+      data: `${window.location.origin}/note/${note.id}`
 
     });
 

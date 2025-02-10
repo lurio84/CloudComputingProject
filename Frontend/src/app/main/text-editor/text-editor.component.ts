@@ -60,7 +60,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     // ✅ Fetch initial content
     this.noteService.get(this.noteId);
     this.noteService.getNotesDetail().subscribe((res: any) => {
-      console.log('scmkdms',res)
       this.noteDetails = res;
       this.content = res.content;
       this.originalContent = res.content; // Store original content for diff comparison

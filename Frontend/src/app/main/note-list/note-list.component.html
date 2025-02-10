@@ -1,6 +1,6 @@
 <div class="middle">
 
-  <mat-grid-list cols="4" rowHeight="2:1">
+  <mat-grid-list [cols]="gridCols" rowHeight="2:1">
     <mat-grid-tile >
       <mat-card appearance="outlined" class="box cursor-pointer" (click)="createNote()">
         <div style="margin: auto">

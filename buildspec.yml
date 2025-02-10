@@ -26,7 +26,7 @@ phases:
       - git clone https://github.com/lurio84/CloudComputingProject.git
       - ls -a
       # Create .env file from example (it was not used. I configured in environmental variables of code build)
-      #- cp .env.example .env
+      
 
   build:
     commands:

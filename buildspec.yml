@@ -1,24 +1,73 @@
 version: 0.2
 
-runtime-versions:
-  java: corretto17  # ここで指定することで、CodeBuildにJavaのバージョンを指定
-
 phases:
   install:
+    runtime-versions:
+      nodejs: 18
     commands:
-      - echo Installing dependencies...
-      - mvn install -DskipTests  # installフェーズで必要な依存関係をインストール
+      # Install OpenJDK 17
+      - echo Installing OpenJDK 17...
+      - sudo apt-get update -y
+      - sudo apt-get install -y openjdk-17-jdk
+      - java -version
+
+      # Install MariaDB client (if not set up yet)
+      - echo Installing MariaDB client...
+      - sudo apt-get install -y mariadb-client
+
+      # Install Git
+      - echo Installing Git...
+      - sudo apt-get install -y git
+
+  pre_build:
+    commands:
+      # Clone the GitHub repository
+      - echo Cloning repository...
+      - git clone https://github.com/lurio84/CloudComputingProject.git
+      - ls -a
+      # Create .env file from example (it was not used. I configured in environment variables of CodeBuild)
+      - cp .env.example .env
+      - echo "DATABASE_URL=$DATABASE_URL" >> .env
+      - echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
+      - echo "DATABASE_PASSWORD=$DATABASE_PASSWORD" >> .env
+      - echo "REDIS_HOST=$REDIS_HOST" >> .env
+      - echo "REDIS_PORT=$REDIS_PORT" >> .env
+      - echo "REDIS_USE_TLS=$REDIS_USE_TLS" >> .env
 
   build:
     commands:
-      - echo Building the application...
-      - mvn clean install -DskipTests
-      - ls -alh target/  # targetディレクトリ内を確認
-      - docker build -t $ImageName -f ./Dockerfile .  # ビルドコンテキストを確認
+      - cd Backend
+      - ls -a
+      - echo "Building Spring Boot application..."
+      - chmod +x mvnw
+      - ./mvnw clean package -DskipTests
+      - cd ..
+
+      # Build and push the Docker image
+      - echo "Building the Docker image..."
+      - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotescontainer:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - set -x
+      - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 211125652233.dkr.ecr.eu-north-1.amazonaws.com
+      - docker build -t collaborativenotescontainer .
+      - docker tag collaborativenotescontainer:latest $IMAGE_URI
+      - docker push $IMAGE_URI
+
+      # Create image definitions
+      - echo "Writing image definitions..."
+      - echo '[{"name":"full-stack","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json  # Created in root
+      - ls -l imagedefinitions.json
+      - cat imagedefinitions.json
 
   post_build:
     commands:
-      - echo Build completed.
-      - docker build -t $ImageName -f ./Dockerfile .  # Dockerイメージをビルド
-      - docker tag $ImageName:latest 211125652233.dkr.ecr.eu-north-1.amazonaws.com/$ImageName:latest  # タグを付ける
-      - docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/$ImageName:latest  # DockerイメージをECRにプッシュ
+      # Running the backend Spring Boot application
+      - echo Running Spring Boot application...
+      - java -jar target/*.jar &
+      - ps aux | grep java
+      - pwd
+
+artifacts:
+  files:
+    - "**/target/*.jar"  # In case the location of `target/` is unknown
+    - imagedefinitions.json
+  discard-paths: no

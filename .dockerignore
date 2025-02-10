@@ -1,0 +1,3 @@
+# Ignorar dependencias y cachés innecesarias
+Frontend/node_modules
+Frontend/.angular

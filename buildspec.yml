@@ -45,7 +45,7 @@ phases:
 
       # Build and push the Docker image
       - echo "Building the Docker image..."
-      - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotescontainer:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:$CODEBUILD_RESOLVED_SOURCE_VERSION
       - set -x
       - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 211125652233.dkr.ecr.eu-north-1.amazonaws.com
       - docker build -t collaborativenotescontainer .

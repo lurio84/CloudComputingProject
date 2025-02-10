@@ -104,20 +104,51 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
     // Save the current cursor position
     const textarea = document.getElementById("noteContent") as HTMLTextAreaElement;
-    const cursorPosition = textarea?.selectionStart || 0;
+    const cursorStart = textarea?.selectionStart || 0;
+    const cursorEnd = textarea?.selectionEnd || 0;
 
+    // Parse the patches and apply them
     const patches = dmp.patch_fromText(diff);
-    const [updatedContent, _] = dmp.patch_apply(patches, this.content);
+    const [updatedContent, results] = dmp.patch_apply(patches, this.content);
+
+    if (results.includes(false)) {
+      console.error("Failed to apply some patches");
+      return;
+    }
 
     if (this.content !== updatedContent) {
       this.content = updatedContent;
       this.originalContent = updatedContent;
 
-      // ✅ Restore cursor position
+      // Restore cursor position if it wasn't directly modified
       if (textarea) {
-        textarea.setSelectionRange(cursorPosition, cursorPosition);
+        const newCursorStart = this.adjustCursorPosition(cursorStart, patches);
+        const newCursorEnd = this.adjustCursorPosition(cursorEnd, patches);
+
+        textarea.setSelectionRange(newCursorStart, newCursorEnd);
       }
     }
+  }
+
+  /**
+   * Adjusts the cursor position based on the patches.
+   */
+  private adjustCursorPosition(cursorPosition: number, patches: any[]): number {
+    let adjustedPosition = cursorPosition;
+
+    for (const patch of patches) {
+      const start = patch.start1;
+      const length = patch.diffs.reduce(
+        (sum: number, diff: [number, string]) => sum + (diff[0] === 1 ? diff[1].length : 0) - (diff[0] === -1 ? diff[1].length : 0),
+        0
+      );
+
+      if (cursorPosition > start) {
+        adjustedPosition += length;
+      }
+    }
+
+    return adjustedPosition;
   }
 
   ngOnDestroy(): void {

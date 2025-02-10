@@ -7,8 +7,12 @@ ngx-editor {
   min-height: 500px;
 }
 .NgxEditor__Wrapper{
-height: 80vh;
+//height: 80vh;
   margin: 50px;
+  //display: flex;
+  //flex-direction: column;
+  //align-items: stretch;
+  //height: auto;
 }
 
 .back-button{
@@ -24,8 +28,13 @@ margin:20px 40px;
 
 .example-full-width {
   width: 100%;
-  min-height: 75vh;
+
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 10px;
+
+  textarea{
+    width: 100%;
+    min-height: 75vh;
+  }
 }

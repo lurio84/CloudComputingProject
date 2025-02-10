@@ -35,6 +35,7 @@ phases:
       - echo "Building Spring Boot application..."
       - chmod +x mvnw
       - ./mvnw clean package -DskipTests
+      - cd ..
 
       # Docker イメージをビルド & プッシュ
       - echo "Building the Docker image..."

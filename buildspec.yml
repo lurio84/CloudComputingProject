@@ -46,7 +46,7 @@ phases:
 
       # image definitions を作成
       - echo "Writing image definitions..."
-      - echo '[{"name":"collaborativenotes","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json  # ルートに作成
+      - echo '[{"name":"collaborativenotesrepository","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json  # ルートに作成
       - ls -l imagedefinitions.json
       - cat imagedefinitions.json
 

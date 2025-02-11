@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=builder /app/Backend/target/*.jar /app/Backend.jar
 
 # Copy the .env file to the correct location
-COPY .env /app/.env
+#COPY .env /app/.env
 
 # Install required dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends nginx && rm -rf /var/lib/apt/lists/*

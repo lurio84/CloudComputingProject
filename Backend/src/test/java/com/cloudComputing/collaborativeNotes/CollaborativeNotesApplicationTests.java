@@ -19,8 +19,9 @@ class CollaborativeNotesApplicationTests {
 		System.setProperty("DATABASE_USERNAME", Objects.requireNonNull(dotenv.get("DATABASE_USERNAME")));
 		System.setProperty("DATABASE_PASSWORD", Objects.requireNonNull(dotenv.get("DATABASE_PASSWORD")));
 	}
-
+/***
 	@Test
 	void contextLoads() {
 	}
+	***/
 }

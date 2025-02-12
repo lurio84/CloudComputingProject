@@ -24,7 +24,6 @@ phases:
       # Clone the GitHub repository
       - echo Cloning repository...
       - git clone https://github.com/lurio84/CloudComputingProject.git
-      - ls -a
       # Create .env file from example (it was not used. I configured in environment variables of CodeBuild)
       - cp .env.example .env
       - echo "DATABASE_URL=$DATABASE_URL" >> .env

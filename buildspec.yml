@@ -48,7 +48,7 @@ phases:
       - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 211125652233.dkr.ecr.eu-north-1.amazonaws.com
       - docker build -t collaborativenotesrepository:latest .
       - docker tag collaborativenotesrepository:latest $IMAGE_URI
-      - docker push $IMAGE_URI
+      - docker push collaborativenotesrepository:latest 
 
       # Create image definitions
       - echo "Writing image definitions..."

@@ -51,6 +51,8 @@ phases:
 
   post_build:
     commands:
+      - echo "Uploading imagedefinitions.json to S3..."
+      - aws s3 cp imagedefinitions.json s3://my-ecs-imagedefinitions-bucket/imagedefinitions.json
       - echo "Running Spring Boot application..."
       - java -jar target/*.jar &
       - ps aux | grep java
@@ -58,6 +60,5 @@ phases:
 
 artifacts:
   files:
-    - "**/target/*.jar" # In case the location of `target/` is unknown
-    - imagedefinitions.json
+    - "**/target/*.jar"
   discard-paths: no

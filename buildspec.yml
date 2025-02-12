@@ -52,7 +52,7 @@ phases:
 
       # Create image definitions
       - echo "Writing image definitions..."
-      - echo '[{"name":"full-stack","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json  # Created in root
+      - echo '[{"name":"full-stack","imageUri":"'$IMAGE_URI':latest"}]' > imagedefinitions.json
       - ls -l imagedefinitions.json
       - cat imagedefinitions.json
 

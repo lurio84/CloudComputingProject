@@ -55,10 +55,6 @@ phases:
       - java -jar target/*.jar &
       - ps aux | grep java
       - pwd
-      - echo "Creating artifact.zip..."
-      - zip -r artifact.zip imagedefinitions.json target/
-      - echo "Uploading artifact.zip to S3..."
-      - aws s3 cp artifact.zip s3://my-ecs-imagedefinitions-bucket/artifact.zip
 artifacts:
   files:
     - "**/target/*.jar" # In case the location of `target/` is unknown

@@ -36,7 +36,6 @@ phases:
   build:
     commands:
       - cd Backend
-      - ls -a
       - echo "Building Spring Boot application..."
       - chmod +x mvnw
       - ./mvnw clean package -DskipTests

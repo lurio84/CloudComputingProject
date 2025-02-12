@@ -11,12 +11,15 @@ import com.cloudComputing.collaborativeNotes.database.repositories.UserRepositor
 import com.cloudComputing.collaborativeNotes.exceptions.NoteNotFoundException;
 import com.cloudComputing.collaborativeNotes.exceptions.UserNotFoundException;
 import com.cloudComputing.collaborativeNotes.models.DiffRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -48,10 +51,18 @@ public class NoteService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private final DiffMatchPatch dmp = new DiffMatchPatch();
+    final DiffMatchPatch dmp = new DiffMatchPatch();
 
     private static final String DIFF_CACHE_KEY_PREFIX = "diff_cache_";
     private static final String DIFF_LIST_KEY_PREFIX = "diff_list_";
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    private static final String REDIS_CHANNEL = "note-updates";
+
+    @Value("${server.instance.id}") // ID único de la instancia
+    private String instanceId;
 
     public void applyDiffAndNotifyClients(DiffRequest diffRequest) {
         validateDiffRequest(diffRequest);
@@ -62,14 +73,33 @@ public class NoteService {
         String cacheKey = DIFF_CACHE_KEY_PREFIX + note.getId();
         String diffListKey = DIFF_LIST_KEY_PREFIX + note.getId();
 
+        // ✅ Almacenar en Redis (Cache de cambios)
         redisTemplate.opsForList().rightPush(cacheKey, diffRequest.getDiff());
         redisTemplate.opsForList().rightPush(diffListKey, diffRequest);
         redisTemplate.expire(cacheKey, 30, TimeUnit.MINUTES);
         redisTemplate.expire(diffListKey, 30, TimeUnit.MINUTES);
 
-        messagingTemplate.convertAndSend("/topic/notes/" + note.getId(), diffRequest);
-        logger.info("Diff cached and sent to clients for noteId: {}", note.getId());
+        // ✅ Publicar en Redis (Pub/Sub) con `instanceId`
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> pubSubMessage = new HashMap<>();
+            pubSubMessage.put("noteId", diffRequest.getNoteId());
+            pubSubMessage.put("userId", diffRequest.getUserId());
+            pubSubMessage.put("diff", diffRequest.getDiff());
+            pubSubMessage.put("instanceId", instanceId);
+            pubSubMessage.put("messageId", UUID.randomUUID().toString());
+
+            String messageJson = objectMapper.writeValueAsString(pubSubMessage);
+            stringRedisTemplate.convertAndSend("note-updates", messageJson);
+        } catch (Exception e) {
+            logger.error("❌ Error serializando mensaje para Redis Pub/Sub: {}", e.getMessage());
+        }
+
+        logger.info("✅ Diff published in Redis Pub/Sub for noteId: {}", note.getId());
     }
+
+
+
 
     public Note getNoteWithCachedDiffs(Long noteId) {
         // Obtener la nota desde la base de datos
@@ -226,7 +256,7 @@ public class NoteService {
         }
     }
 
-    private String applyDiffToContent(String diff, String originalContent) {
+    String applyDiffToContent(String diff, String originalContent) {
         LinkedList<DiffMatchPatch.Patch> patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(diff);
         Object[] result = dmp.patchApply(patches, originalContent);
         return (String) result[0];

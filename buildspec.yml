@@ -21,9 +21,11 @@ phases:
 
   pre_build:
     commands:
-      # Clone the GitHub repository
+      # Clone the GitHub repository (Consider using CodeBuild's built-in source handling)
       - echo Cloning repository...
       - git clone https://github.com/lurio84/CloudComputingProject.git
+      - cd CloudComputingProject # Change directory into the cloned repo
+
       # Create .env file from example (it was not used. I configured in environment variables of CodeBuild)
       - cp .env.example .env
       - echo "DATABASE_URL=$DATABASE_URL" >> .env
@@ -46,26 +48,31 @@ phases:
       - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:$CODEBUILD_RESOLVED_SOURCE_VERSION
       - set -x
       - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 211125652233.dkr.ecr.eu-north-1.amazonaws.com
-      - docker build -t collaborativenotesrepository:latest .
+      - docker build -t collaborativenotesrepository .  # Build in the correct context (inside CloudComputingProject)
+
+      # Tag both with version and latest
       - docker tag collaborativenotesrepository:latest $IMAGE_URI
-      - docker push collaborativenotesrepository:latest 
+      - docker push $IMAGE_URI
+
+      - docker tag collaborativenotesrepository:latest 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest #Tag with latest
+      - docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest #Push latest tag
 
       # Create image definitions
       - echo "Writing image definitions..."
-      - echo "{\"name\":\"full-stack\",\"imageUri\":\"$IMAGE_URI:latest\"}" > imagedefinitions.json
+      - echo '[{"name":"full-stack","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json
       - ls -l imagedefinitions.json
       - cat imagedefinitions.json
 
   post_build:
     commands:
-      # Running the backend Spring Boot application
+      # Running the backend Spring Boot application (This is likely for testing in CodeBuild, not for production)
       - echo Running Spring Boot application...
-      - java -jar target/*.jar &
+      - java -jar Backend/target/*.jar &  # Correct path to the JAR file
       - ps aux | grep java
       - pwd
 
 artifacts:
   files:
-    - "**/target/*.jar"  # In case the location of `target/` is unknown
+    - "CloudComputingProject/Backend/target/*.jar" # Correct path to the JAR file
     - imagedefinitions.json
   discard-paths: no

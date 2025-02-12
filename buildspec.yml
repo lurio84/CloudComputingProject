@@ -51,14 +51,19 @@ phases:
 
   post_build:
     commands:
-      - echo "Uploading imagedefinitions.json to S3..."
-      - aws s3 cp imagedefinitions.json s3://my-ecs-imagedefinitions-bucket/imagedefinitions.json
       - echo "Running Spring Boot application..."
       - java -jar target/*.jar &
       - ps aux | grep java
       - pwd
-
+      - echo "Creating artifact.zip..."
+      - zip -r artifact.zip imagedefinitions.json target/
+      - echo "Uploading artifact.zip to S3..."
+      - aws s3 cp artifact.zip s3://my-ecs-imagedefinitions-bucket/artifact.zip
 artifacts:
   files:
-    - "**/target/*.jar"
+    - "**/target/*.jar" # In case the location of `target/` is unknown
+    - imagedefinitions.json
   discard-paths: no
+  base-directory: . # 必要に応じてプロジェクトのルートディレクトリに設定
+
+

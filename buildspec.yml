@@ -18,6 +18,7 @@ phases:
       # Install Git
       - echo Installing Git...
       - sudo apt-get install -y git
+      - ls -l
 
   pre_build:
     commands:

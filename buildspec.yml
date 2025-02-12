@@ -45,7 +45,7 @@ phases:
       - docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest
 
       - echo "Writing image definitions..."
-      - echo '[{"name":"full-stack","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json
+      - echo '[{"name":"collaborativenotesrepository","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json
       - ls -l imagedefinitions.json
       - cat imagedefinitions.json
 

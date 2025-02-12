@@ -5,26 +5,19 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      # Install OpenJDK 17
       - echo Installing OpenJDK 17...
       - sudo apt-get update -y
       - sudo apt-get install -y openjdk-17-jdk
       - java -version
-
-      # Install MariaDB client (if not set up yet)
       - echo Installing MariaDB client...
       - sudo apt-get install -y mariadb-client
-
-      # Install Git
       - echo Installing Git...
       - sudo apt-get install -y git
 
   pre_build:
     commands:
-      # Clone the GitHub repository
       - echo Cloning repository...
       - git clone https://github.com/lurio84/CloudComputingProject.git
-      # Create .env file from example (it was not used. I configured in environment variables of CodeBuild)
       - cp .env.example .env
       - echo "DATABASE_URL=$DATABASE_URL" >> .env
       - echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
@@ -41,7 +34,6 @@ phases:
       - ./mvnw clean package -DskipTests
       - cd ..
 
-      # Build and push the Docker image
       - echo "Building the Docker image..."
       - IMAGE_URI=211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:$CODEBUILD_RESOLVED_SOURCE_VERSION
       - set -x
@@ -49,26 +41,24 @@ phases:
       - docker build -t collaborativenotesrepository .
       - docker tag collaborativenotesrepository:latest $IMAGE_URI
       - docker push $IMAGE_URI
+      - docker tag collaborativenotesrepository:latest 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest
+      - docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest
 
-      - docker tag collaborativenotesrepository:latest 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest # 追加: latestタグ付け
-      - docker push 211125652233.dkr.ecr.eu-north-1.amazonaws.com/collaborativenotesrepository:latest # 追加: latestタグpush
-
-      # Create image definitions
       - echo "Writing image definitions..."
-      - echo '[{"name":"full-stack","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json # Created in root
+      - echo '[{"name":"full-stack","imageUri":"'$IMAGE_URI'"}]' > imagedefinitions.json
       - ls -l imagedefinitions.json
       - cat imagedefinitions.json
 
   post_build:
     commands:
-      # Running the backend Spring Boot application
-      - echo Running Spring Boot application...
+      - echo "Uploading imagedefinitions.json to S3..."
+      - aws s3 cp imagedefinitions.json s3://my-ecs-imagedefinitions-bucket/imagedefinitions.json
+      - echo "Running Spring Boot application..."
       - java -jar target/*.jar &
       - ps aux | grep java
       - pwd
 
 artifacts:
   files:
-    - "**/target/*.jar" # In case the location of `target/` is unknown
-    - imagedefinitions.json
+    - "**/target/*.jar"
   discard-paths: no

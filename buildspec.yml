@@ -27,7 +27,7 @@ phases:
       - echo "REDIS_PORT=$REDIS_PORT" >> .env
       - echo "REDIS_USE_TLS=$REDIS_USE_TLS" >> .env
       - echo "Uploading .env to S3..."
-      - aws s3 cp imagedefinitions.json s3://my-ecs-imagedefinitions-bucket/.env
+      - aws s3 cp .env s3://my-ecs-environmentfile/.env
 
   build:
     commands:
@@ -58,11 +58,10 @@ phases:
       - java -jar target/*.jar &
       - ps aux | grep java
       - pwd
+
 artifacts:
   files:
     - "**/target/*.jar" # In case the location of `target/` is unknown
     - imagedefinitions.json
   discard-paths: no
   base-directory: . # 必要に応じてプロジェクトのルートディレクトリに設定
-
-

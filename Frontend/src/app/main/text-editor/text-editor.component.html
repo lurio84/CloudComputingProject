@@ -12,7 +12,8 @@
     <textarea matInput placeholder="Start to write..."
               [(ngModel)]="content"
               cdkTextareaAutosize
-
+              #noteContent
+              id="noteContent"
               (ngModelChange)="onContentChange($event)"></textarea>
   </mat-form-field>
 

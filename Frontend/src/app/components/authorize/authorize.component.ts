@@ -11,12 +11,14 @@ import {FormBuilder, FormGroup} from "@angular/forms";
 export class AuthorizeComponent implements OnInit{
   userId = 1;
   form!: FormGroup;
+  formLogin!: FormGroup;
 
 
   constructor(private router: Router, private authService: AuthService, private fb: FormBuilder) {}
 
   ngOnInit() {
-    this.createForm()
+    this.createForm();
+    this.createFormB()
   }
 
   createForm() {
@@ -27,7 +29,15 @@ export class AuthorizeComponent implements OnInit{
     });
   }
 
-  login(): void {
+  createFormB() {
+    this.formLogin = this.fb.group({
+      username: ['tes@tes'],
+      password: [12345678],
+    });
+  }
+
+
+  register(): void {
     this.authService.login(this.form.value).subscribe(
       (response) => {
         if (response) {
@@ -39,5 +49,10 @@ export class AuthorizeComponent implements OnInit{
         alert('Login failed. Please try again.');
       }
     );
+  }
+
+  login() {
+    console.log(this.formLogin.value);
+    // this.router.navigate(['/']);
   }
 }

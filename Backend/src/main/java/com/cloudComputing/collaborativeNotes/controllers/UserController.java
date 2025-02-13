@@ -4,6 +4,7 @@ import com.cloudComputing.collaborativeNotes.database.entities.Note;
 import com.cloudComputing.collaborativeNotes.database.entities.User;
 import com.cloudComputing.collaborativeNotes.database.repositories.NoteRepository;
 import com.cloudComputing.collaborativeNotes.database.repositories.UserRepository;
+import com.cloudComputing.collaborativeNotes.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,14 @@ public class UserController {
     public ResponseEntity<User> getUser(@PathVariable Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(user);
+    }
+
+    // Get a user by their name
+    @GetMapping("/by-username/{username}")
+    public ResponseEntity<User> getUser(@PathVariable String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
         return ResponseEntity.ok(user);
     }
 

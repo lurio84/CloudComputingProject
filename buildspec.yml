@@ -13,6 +13,7 @@ phases:
       - sudo apt-get install -y mariadb-client
       - echo Installing Git...
       - sudo apt-get install -y git
+      
 
   pre_build:
     commands:
@@ -25,6 +26,8 @@ phases:
       - echo "REDIS_HOST=$REDIS_HOST" >> .env
       - echo "REDIS_PORT=$REDIS_PORT" >> .env
       - echo "REDIS_USE_TLS=$REDIS_USE_TLS" >> .env
+      - echo "Uploading .env to S3..."
+      - aws s3 cp imagedefinitions.json s3://my-ecs-imagedefinitions-bucket/.env
 
   build:
     commands:

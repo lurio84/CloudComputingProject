@@ -19,7 +19,7 @@ phases:
     commands:
       - echo Cloning repository...
       - git clone https://github.com/lurio84/CloudComputingProject.git
-      - > .env
+      - echo -n > .env
       - echo "DATABASE_URL=$DATABASE_URL" >> .env
       - echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
       - echo "DATABASE_PASSWORD=$DATABASE_PASSWORD" >> .env

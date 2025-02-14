@@ -30,13 +30,22 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    // Get a user by their name
-    @GetMapping("/by-username/{username}")
-    public ResponseEntity<User> getUser(@PathVariable String username) {
+    @GetMapping("/by-username/{username}/{password}")
+    public ResponseEntity<User> getUser(
+            @PathVariable String username,
+            @PathVariable String password) {
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
+
+        // Verifica si la contraseña coincide
+        if (!user.getPassword().equals(password)) {
+            throw new IllegalArgumentException("Incorrect password for user '" + username + "'");
+        }
+
         return ResponseEntity.ok(user);
     }
+
 
     // Create a new user with parameters (RequestParam) instead of RequestBody
     @PostMapping

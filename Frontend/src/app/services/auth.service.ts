@@ -18,14 +18,13 @@ export class AuthService {
   /**
    * Login method to authenticate the user.
    */
-  login(form: any): Observable<any> {
+  register(form: any): Observable<any> {
     let queryParams = new HttpParams();
     queryParams = queryParams.append('username', form.username);
     queryParams = queryParams.append('email', form.email)
     queryParams = queryParams.append('password', form.password)
     return this.http.post<any>(`${this.baseURL}users`,   '', {params: queryParams}).pipe(
       tap((response) => {
-        console.log(response)
         if (response) {
           this.isAuthenticatedSubject.next(true);
           this.userId = response.id;
@@ -35,13 +34,30 @@ export class AuthService {
     );
   }
 
+  login(body: {username: string, password: string}){
+    return this.http.get<any>(`${this.baseURL}users/by-username/${body.username}/${body.password}`).pipe(
+      tap((response) => {
+        if (response) {
+          this.isAuthenticatedSubject.next(true);
+          this.userId = response.id;
+          localStorage.setItem('collaborativeNote', String(response.id));
+        }
+      })
+  );
+  }
+
   /**
    * Logout method to clear user session and redirect to login page.
    */
   logout(): void {
-    this.isAuthenticatedSubject.next(false);
+    console.log('here');
     localStorage.removeItem('collaborativeNote');
-    this.router.navigate(['/login']);
+    this.isAuthenticatedSubject.next(false);
+    setTimeout(() => {
+      this.router.navigateByUrl('/login').then(() => {
+        window.location.reload(); // Ensure a clean state
+      });
+    }, 100);
   }
 
   /**

@@ -23,36 +23,44 @@ export class AuthorizeComponent implements OnInit{
 
   createForm() {
     this.form = this.fb.group({
-      username: ['tes@tes'],
-      email: ['tes@tes'],
-      password: [12345678],
+      username: [''],
+      email: [''],
+      password: [''],
     });
   }
 
   createFormB() {
     this.formLogin = this.fb.group({
-      username: ['tes@tes'],
-      password: [12345678],
+      username: [''],
+      password: [''],
     });
   }
 
 
   register(): void {
-    this.authService.login(this.form.value).subscribe(
+    this.authService.register(this.form.value).subscribe(
       (response) => {
         if (response) {
           this.router.navigate(['/']); // Navigate to note editor after successful login
         }
       },
       (error) => {
-        console.error('Login failed:', error);
-        alert('Login failed. Please try again.');
+        alert(error.error.message);
       }
     );
   }
 
   login() {
-    console.log(this.formLogin.value);
-    // this.router.navigate(['/']);
+    this.authService.login(this.formLogin.value).subscribe(
+      (response) => {
+        if (response) {
+          this.router.navigate(['/']); // Navigate to note editor after successful login
+        }
+      },
+      (error) => {
+        console.error('Login failed:', error.error.message);
+        alert(error.error.message);
+      }
+    );
   }
 }

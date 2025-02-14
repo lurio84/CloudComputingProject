@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Editor } from 'ngx-editor';
 import { WebSocketService } from "../../services/web-socket.service";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -6,8 +6,7 @@ import { NoteService } from "../note.service";
 import { AuthService } from "../../services/auth.service";
 import { noop, Subscription } from "rxjs";
 import { diff_match_patch } from 'diff-match-patch';
-import {environment} from "../../../environments/environments";
-
+import { environment } from "../../../environments/environments";
 
 @Component({
   selector: 'app-text-editor',
@@ -16,7 +15,7 @@ import {environment} from "../../../environments/environments";
 })
 export class TextEditorComponent implements OnInit, OnDestroy {
   editor!: Editor;
-  content: string = '<p></p>';
+  content: string = '';
   private debounceTimer: any;
   userId!: number;
   noteId!: number;
@@ -24,15 +23,18 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   private originalContent: string = "";
   noteDetails: any;
 
+  webSocketUrl = environment.websocketUrl;
   isTyping = false;
 
-  webSocketUrl = environment.websocketUrl;
+  @ViewChild('noteContent') noteContent!: ElementRef<HTMLTextAreaElement>; // Reference to textarea
 
-  constructor(private webSocketService: WebSocketService,
-              private route: ActivatedRoute,
-              private noteService: NoteService,
-              private authService: AuthService,
-              private router: Router) {
+  constructor(
+    private webSocketService: WebSocketService,
+    private route: ActivatedRoute,
+    private noteService: NoteService,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.noteId = this.route.snapshot.params['id'];
   }
 
@@ -40,6 +42,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.userId = Number(this.authService.getUserId());
     this.editor = new Editor();
 
+    // Check if user has access to the note
     this.authService.getNoteList(this.userId).subscribe(res => {
       const exist = res.some((note: any) => note.id === this.noteId);
       if (!exist) {
@@ -47,13 +50,12 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       }
     });
 
-    // ✅ Connect to WebSocket and subscribe
+    // ✅ WebSocket Connection
     this.webSocketSubscription = this.webSocketService.connect(this.webSocketUrl, this.noteId)
       .subscribe((message: any) => {
+        if (message.userId === this.userId) return;
         if (message.noteId == this.noteId && message.userId != this.userId) {
           this.applyReceivedDiff(message.diff);
-        } else {
-          console.log("Skipping diff application for local user.");
         }
       });
 
@@ -62,7 +64,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.noteService.getNotesDetail().subscribe((res: any) => {
       this.noteDetails = res;
       this.content = res.content;
-      this.originalContent = res.content; // Store original content for diff comparison
+      this.originalContent = res.content; // Store original content
     });
   }
 
@@ -71,60 +73,64 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Called whenever the content of the editor changes.
-   * Computes the diff and sends it to WebSocket.
+   * Called when user types. Sends diff to WebSocket.
    */
   onContentChange(newContent: string): void {
-    this.isTyping = true;
-    clearTimeout(this.debounceTimer);
+    const textarea = this.noteContent?.nativeElement;
+    if (!textarea) return;
 
-    this.debounceTimer = setTimeout(() => {
-      this.isTyping = false;
-      const dmp = new diff_match_patch();
-      const diffs = dmp.diff_main(this.originalContent, newContent);
-      dmp.diff_cleanupSemantic(diffs);
-      const patch = dmp.patch_toText(dmp.patch_make(diffs));
+    const cursorPosition = textarea.selectionStart; // ✅ Save local cursor before sending
 
-      const message = {
-        noteId: this.noteId,
-        userId: this.userId,
-        diff: patch
-      };
+    const dmp = new diff_match_patch();
+    const diffs = dmp.diff_main(this.originalContent, newContent);
+    dmp.diff_cleanupSemantic(diffs);
+    const patch = dmp.patch_toText(dmp.patch_make(diffs));
 
-      this.webSocketService.send(message);
-      this.originalContent = newContent; // ✅ Update original content after sending
-    }, 1); // Debounce time
+    const message = {
+      noteId: this.noteId,
+      userId: this.userId,
+      diff: patch
+    };
+
+    this.webSocketService.send(message); // ✅ Send instantly
+    this.originalContent = newContent; // ✅ Update local state
+
+    // ✅ Restore local cursor after update
+    setTimeout(() => {
+      textarea.setSelectionRange(cursorPosition, cursorPosition);
+    }, 0);
   }
 
 
+  /**
+   * Applies received diff updates while preserving cursor position.
+   */
   applyReceivedDiff(diff: string): void {
+    const textarea = this.noteContent?.nativeElement;
+    if (!textarea) return;
+
+    const cursorPosition = textarea.selectionStart; // ✅ Save cursor before applying diff
+
     const dmp = new diff_match_patch();
-
-    // Save the current cursor position
-    const textarea = document.getElementById("noteContent") as HTMLTextAreaElement;
-    const cursorPosition = textarea?.selectionStart || 0;
-
     const patches = dmp.patch_fromText(diff);
-    const [updatedContent, _] = dmp.patch_apply(patches, this.content);
+    const [updatedContent, results] = dmp.patch_apply(patches, this.content);
 
-    if (this.content !== updatedContent) {
+    if (results.some((applied) => applied)) { // ✅ Apply only if patch was applied
       this.content = updatedContent;
       this.originalContent = updatedContent;
 
-      // ✅ Restore cursor position
-      if (textarea) {
+      // ✅ Restore cursor without disrupting typing
+      setTimeout(() => {
         textarea.setSelectionRange(cursorPosition, cursorPosition);
-      }
+      }, 0);
     }
   }
 
+
+
   ngOnDestroy(): void {
     this.editor?.destroy();
-
-    if (this.webSocketSubscription) {
-      this.webSocketSubscription.unsubscribe();
-    }
-
+    this.webSocketSubscription?.unsubscribe();
     this.webSocketService.close();
   }
 

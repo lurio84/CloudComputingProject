@@ -1,21 +1,15 @@
-
-
 <div class="back-button">
-
-  <button (click)="back()" mat-button> <mat-icon>arrow_back</mat-icon>   Back to Home</button>
-
+  <button (click)="back()" mat-button> <mat-icon>arrow_back</mat-icon> Back to Home</button>
 </div>
+
 <div class="NgxEditor__Wrapper">
-
   <mat-form-field class="example-full-width">
-
-    <textarea matInput placeholder="Start to write..."
+    <textarea matInput placeholder="Start writing..."
               [(ngModel)]="content"
               cdkTextareaAutosize
               #noteContent
               id="noteContent"
-              (ngModelChange)="onContentChange($event)"></textarea>
+              (ngModelChange)="onContentChange($event)">
+    </textarea>
   </mat-form-field>
-
-
 </div>

@@ -58,7 +58,7 @@ phases:
       - ps aux | grep java
       - pwd
 
-      # 🔥 ここで `appspec.yaml` を作成 🔥
+    
       - echo "Creating appspec.yaml..."
       - |
         echo "version: 0.0" > appspec.yaml
@@ -78,6 +78,6 @@ artifacts:
   files:
     - "**/target/*.jar" # In case the location of `target/` is unknown
     - imagedefinitions.json
-    - appspec.yaml  # 🔥 ここで `appspec.yaml` をアーティファクトとして追加 🔥
+    - appspec.yaml  
   discard-paths: no
   base-directory: . # 必要に応じてプロジェクトのルートディレクトリに設定

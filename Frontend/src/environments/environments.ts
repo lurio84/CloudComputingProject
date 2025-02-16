@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   // apiUrl: window.location.origin + ':8080/',
-   apiUrl: 'http://localhost:8080/',
-   websocketUrl:'http://localhost:8080/ws'
+   apiUrl: '/api/',
+   websocketUrl:'/api/ws'
   // websocketUrl:window.location.origin + ':8080/ws'
 }

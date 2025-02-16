@@ -60,15 +60,16 @@ phases:
 
       # 🔥 ここで `appspec.yaml` を作成 🔥
       - echo "Creating appspec.yaml..."
-      - echo "version: 0.0" > appspec.yaml
-      - echo "Resources:" >> appspec.yaml
-      - echo "  - TargetService:" >> appspec.yaml
-      - echo "      Type: AWS::ECS::Service" >> appspec.yaml
-      - echo "      Properties:" >> appspec.yaml
-      - echo "        TaskDefinition: fullstack-app-task-naoya" >> appspec.yaml
-      - echo "        LoadBalancerInfo:" >> appspec.yaml
-      - echo "          ContainerName: collaborativenotesrepository" >> appspec.yaml
-      - echo "          ContainerPort: 80" >> appspec.yaml
+      - |
+        echo "version: 0.0" > appspec.yaml
+        echo "Resources:" >> appspec.yaml
+        echo "  - TargetService:" >> appspec.yaml
+        echo "      Type: AWS::ECS::Service" >> appspec.yaml
+        echo "      Properties:" >> appspec.yaml
+        echo "        TaskDefinition: fullstack-app-task-naoya" >> appspec.yaml
+        echo "        LoadBalancerInfo:" >> appspec.yaml
+        echo "          ContainerName: collaborativenotesrepository" >> appspec.yaml
+        echo "          ContainerPort: 80" >> appspec.yaml
 
       - echo "Checking contents of appspec.yaml..."
       - cat appspec.yaml

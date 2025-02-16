@@ -13,7 +13,6 @@ phases:
       - sudo apt-get install -y mariadb-client
       - echo Installing Git...
       - sudo apt-get install -y git
-      
 
   pre_build:
     commands:
@@ -59,9 +58,26 @@ phases:
       - ps aux | grep java
       - pwd
 
+    
+      - echo "Creating appspec.yaml..."
+      - |
+        echo "version: 0.0" > appspec.yaml
+        echo "Resources:" >> appspec.yaml
+        echo "  - TargetService:" >> appspec.yaml
+        echo "      Type: AWS::ECS::Service" >> appspec.yaml
+        echo "      Properties:" >> appspec.yaml
+        echo "        TaskDefinition: fullstack-app-task-naoya" >> appspec.yaml
+        echo "        LoadBalancerInfo:" >> appspec.yaml
+        echo "          ContainerName: collaborativenotesrepository" >> appspec.yaml
+        echo "          ContainerPort: 80" >> appspec.yaml
+
+      - echo "Checking contents of appspec.yaml..."
+      - cat appspec.yaml
+
 artifacts:
   files:
     - "**/target/*.jar" # In case the location of `target/` is unknown
     - imagedefinitions.json
+    - appspec.yaml  
   discard-paths: no
   base-directory: . # 必要に応じてプロジェクトのルートディレクトリに設定
